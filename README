@@ -1,0 +1,8 @@
+swarm
+Matthew DiBernardo [01.07.2015]
+
+A reignition of the project that rednet-transport-protocol was supposed to grow into, now that RTP has been made defunct by improvements to the ComputerCraft API. The primary goal of swarm is to create a semi-autonomous distributed AI network using ComputerCraft computers and turtles, and then to leverage that network to automatically accomplish a number of tasks without user intervention (such as mining ores, harvesting trees and plants, constructing rudimentary buildings, etc).
+
+Or, in simpler terms, it's a robotic world-conquering hivemind.
+
+BE IT FOR THE SWARM!
