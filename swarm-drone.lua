@@ -7,9 +7,9 @@ local function SwarmDrone()
 	local self = {} -- 'this' reference
 
 	-- Tick Info
-	local self.startTickSecondTime
-	local self.ticks = 0
-	local self.ticksPerSecond = 0
+	self.startTickSecondTime
+	self.ticks = 0
+	self.ticksPerSecond = 0
 
 	function init()
 		--[[ TODO

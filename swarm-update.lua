@@ -3,7 +3,7 @@
 ]]--
 
 -- Default host definitions
-local swarmHost = "http://raw.githubusercontent.com/Cyrixus/swarm/master/"
+local swarmHost = "https://raw.githubusercontent.com/Cyrixus/swarm/master/"
 local swarmFiles = swarmHost .. "swarm-files.cfg"
 
 if http then
