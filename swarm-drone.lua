@@ -7,7 +7,7 @@ local function SwarmDrone()
 	local self = {} -- 'this' reference
 
 	-- Tick Info
-	self.startTickSecondTime
+	self.startTickSecondTime = nil
 	self.ticks = 0
 	self.ticksPerSecond = 0
 
@@ -45,7 +45,7 @@ local function SwarmDrone()
 		onTick() -- This may not be called EVERY tick(), in the future
 
 		-- Increment Tick Counter
-		self.ticks += 1
+		self.ticks = self.ticks + 1
 	end -- EOF tick()
 
 	local function onTick()
