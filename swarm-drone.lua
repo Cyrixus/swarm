@@ -43,9 +43,9 @@ local function SwarmDrone()
 		self.behaviors = {}
 		
 		-- Load the Behavior lists
-		local files = fs.list(shell.resolve(behaviorDir))
+		local files = fs.list(shell.resolve("") .. behaviorDir)
 		for i, file in ipairs(files) do
-			local fileName = shell.resolve(behaviorDir) .. file
+			local fileName = shell.resolve("") .. behaviorDir .. file
 			print(fileName, " : ", file)
 			if not fs.isDir(fileName) then
 				-- Extract and decode the behavior information
@@ -111,7 +111,7 @@ local function SwarmDrone()
 		if false then
 			-- FIXME: Determine which behavior we're actually going to run
 		else
-			IDLE() -- Execute the idle behavior
+			IDLE.execute() -- Execute the idle behavior
 		end
 	end
 
