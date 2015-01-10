@@ -41,7 +41,24 @@ local function SwarmDrone()
 	
 	-- Behaviors
 	self.behaviors = {}
+	
+	
+	--[[ Engine Calls ]]--
+	local function checkConditional(conditional, params)
+		local conLoc = shell.resolve("") .. conditionalDir .. conditional
+		if loadLib(conLoc) then
+			-- Call the conditional, with the provided params
+			local result = _G[conditional].compare(params)
+			
+			-- Clean up the file when we're done
+			os.unloadAPI(conLoc)
+			
+			if result > 1 then return true end
+		end
+		return false
+	end
 
+	--[[ Initialization ]]--
 	function self.init()
 		--[[ TODO
 			Step 1: Load potential behaviors (and thier constraints)
@@ -87,6 +104,25 @@ local function SwarmDrone()
 		-- TODO: Announce self to swarm-net
 	end
 
+
+	--[[ Engine Tick Event ]]--
+	local function onTick()
+		--[[ FIXME: This is where the magic should start happening.
+			Step 1: Regenerate constraints (fuel state, inventory fullness)
+			Step 2: Poll OS events, handle anything relevent
+			Step 3: Determine Active Behavior via priority, queue, fuzzy logic, etc.
+			Step 4: Execute Active Behavior
+		]]--
+		
+		if false then
+			-- FIXME: Determine which behavior we're actually going to run
+		else
+			IDLE.execute() -- Execute the idle behavior
+		end
+	end
+	
+	
+	--[[ tick metacall ]]--
 	function self.tick()
 		-- Recalculate ticksPerSecond
 		local currentTime = os.time() -- Gets the minecraft time
@@ -114,35 +150,6 @@ local function SwarmDrone()
 		-- Increment Tick Counter
 		self.ticks = self.ticks + 1
 	end -- EOF tick()
-
-	local function onTick()
-		--[[ FIXME: This is where the magic should start happening.
-			Step 1: Regenerate constraints (fuel state, inventory fullness)
-			Step 2: Poll OS events, handle anything relevent
-			Step 3: Determine Active Behavior via priority, queue, fuzzy logic, etc.
-			Step 4: Execute Active Behavior
-		]]--
-		
-		if false then
-			-- FIXME: Determine which behavior we're actually going to run
-		else
-			IDLE.execute() -- Execute the idle behavior
-		end
-	end
-	
-	local function checkConditional(conditional, params)
-		local conLoc = shell.resolve("") .. conditionalDir .. conditional
-		if loadLib(conLoc) then
-			-- Call the conditional, with the provided params
-			local result = _G[conditional].compare(params)
-			
-			-- Clean up the file when we're done
-			os.unloadAPI(conLoc)
-			
-			if result > 1 then return true end
-		end
-		return false
-	end
 
 	return self
 end -- EOF SwarmDrone Definition
