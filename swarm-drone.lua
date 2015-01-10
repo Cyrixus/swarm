@@ -24,7 +24,7 @@ local function SwarmDrone()
 	-- Behaviors
 	self.behaviors = {}
 
-	function init()
+	function self.init()
 		--[[ TODO
 			Step 1: Load potential behaviors (and thier constraints)
 				from disk, hold in local memory.
@@ -59,7 +59,7 @@ local function SwarmDrone()
 		-- TODO: Announce self to swarm-net
 	end
 
-	function tick()
+	function self.tick()
 		-- Recalculate ticksPerSecond
 		local currentTime = os.time() -- Gets the minecraft time
 		if self.startTickSecondTime ~= nil then
@@ -96,6 +96,7 @@ local function SwarmDrone()
 		]]--
 	end
 
+	return self
 end -- EOF SwarmDrone Definition
 
 local drone = SwarmDrone()
