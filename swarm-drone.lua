@@ -4,7 +4,7 @@
 
 -- Load the JSON encoding/decoding library
 -- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
-local JSON = (loadfile "JSON.lua")()
+if not os.loadAPI(shell.resolve("") .. "/lib/JSON") then error("Failed to load JSON API, aborting.") end
 
 -- Constants
 local behaviorDir = "/behaviors"
@@ -36,7 +36,7 @@ local function SwarmDrone()
 		self.behaviors = {}
 		
 		-- Load the Behavior lists
-		for file in fs.list(shell.resolve(behaviorDir) do
+		for file in fs.list(shell.resolve(behaviorDir)) do
 			if not fs.isDir(file) then
 				-- Extract and decode the behavior information
 				local behaviorTable = JSON:decode(fs.open(file).readAll())
