@@ -17,7 +17,9 @@ local identityDir = "/id/" -- As in the psychological id. This dir contains the 
 local function loadLib(libLocation)
 	if not os.loadAPI(libLocation) then
 		print("Failed to load library [" .. libLocation .. "], returning false.")
+		return false
 	end
+	return true
 end
 
 -- Load the JSON encoding/decoding library
