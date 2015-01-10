@@ -36,7 +36,8 @@ local function SwarmDrone()
 		self.behaviors = {}
 		
 		-- Load the Behavior lists
-		for file in fs.list(shell.resolve(behaviorDir)) do
+		for i, file in fs.list(shell.resolve(behaviorDir)) do
+			print(file)
 			if not fs.isDir(file) then
 				-- Extract and decode the behavior information
 				local behaviorTable = JSON:decode(fs.open(file).readAll())
