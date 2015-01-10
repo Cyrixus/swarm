@@ -2,24 +2,10 @@
 	Core drone behavior.
 ]]--
 
--- A quick and dirty way of dumping tables
-local function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
-end
-
 -- Load the JSON encoding/decoding library
 -- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
 if not os.loadAPI(shell.resolve("") .. "/lib/JSON") then error("Failed to load JSON API, aborting.") end
-dump(JSON) -- DEBUG: JSON object isn't getting filled? dafuq?
+JSON = JSON.OBJDEF:new() -- Because, you know, just letting us load libs normally was too hard.
 
 -- Constants
 local behaviorDir = "/behaviors"
@@ -64,7 +50,7 @@ local function SwarmDrone()
 				f.close()
 				
 				-- Append all the behaviors to our master list of behaviors
-				for k, behavior in behaviorTable do
+				for k, behavior in pairs(behaviorTable) do
 					self.behaviors[#self.behaviors + 1] = behavior
 				end
 			end
@@ -121,3 +107,5 @@ end -- EOF SwarmDrone Definition
 
 local drone = SwarmDrone()
 drone.init()
+
+os.unloadAPI(shell.resolve("") .. "/lib/JSON")
