@@ -11,12 +11,12 @@ local conditionalDir = "/conditionals/"
 
 -- Load the JSON encoding/decoding library
 -- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
-local apiLocation = shell.resolve(libDir) .. "JSON"
-if not os.loadAPI(shell.resolve(libDir) .. "JSON") then error("Failed to load JSON API @ [" .. apiLocation .. "], aborting.") end
+local apiLocation = shell.resolve("") .. libDir.. "JSON"
+if not os.loadAPI(apiLocation) then error("Failed to load JSON API @ [" .. apiLocation .. "], aborting.") end
 local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load libs normally was too hard.
 
 -- Load the IDLE behavior, because we're going to be running it frequently
-local idleLoc = shell.resolve(verbDir) .. "IDLE"
+local idleLoc = shell.resolve("") .. verbDir .. "IDLE"
 if not os.loadAPI(idleLoc) then error("Failed to load IDLE behavior @ [" .. idleLoc .. ", aborting.") end
 
 -- SwarmDrone Class Definition
@@ -46,7 +46,7 @@ local function SwarmDrone()
 		local files = fs.list(shell.resolve(behaviorDir))
 		for i, file in ipairs(files) do
 			local fileName = shell.resolve(behaviorDir) .. file
-			print(fileName)
+			print(fileName, " : ", file)
 			if not fs.isDir(fileName) then
 				-- Extract and decode the behavior information
 				local f = fs.open(fileName, "r")
