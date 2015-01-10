@@ -37,11 +37,12 @@ local function SwarmDrone()
 		
 		-- Load the Behavior lists
 		local files = fs.list(shell.resolve(behaviorDir))
-		for i, file in files do
-			print(file)
+		for i, file in ipairs(files) do
 			if not fs.isDir(file) then
 				-- Extract and decode the behavior information
-				local behaviorTable = JSON:decode(fs.open(file).readAll())
+				local f = fs.open(file, "r")
+				local behaviorTable = JSON:decode(f.readAll())
+				f.close()
 				
 				-- Append all the behaviors to our master list of behaviors
 				for k, behavior in behaviorTable do
