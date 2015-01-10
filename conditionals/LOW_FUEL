@@ -1,0 +1,9 @@
+function ()
+    local maxFuel = turtle.getFuelLimit()
+    local currentFuel = turtle.getFuelLevel()
+    
+    if maxFuel == "unlimited" or maxFuel <= 0 then
+        return 0
+    end
+    return 1 - currentFuel / maxFuel
+end

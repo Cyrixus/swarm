@@ -2,16 +2,20 @@
 	Core drone behavior.
 ]]--
 
+-- Constants
+local libDir = "/lib/"
+local behaviorDir = "/behaviors/"
+local verbDir = "/verbs/"
+local resourceDir = "/resources/"
+local conditionalDir = "/conditionals/"
+
 -- Load the JSON encoding/decoding library
 -- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
-if not os.loadAPI(shell.resolve("") .. "/lib/JSON") then error("Failed to load JSON API, aborting.") end
-local JSON = JSON.OBJDEF:new() -- Because, you know, just letting us load libs normally was too hard.
+if not os.loadAPI(shell.resolve(libDir) .. "JSON") then error("Failed to load JSON API, aborting.") end
+local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load libs normally was too hard.
 
--- Constants
-local behaviorDir = "/behaviors"
-local verbDir = "/verbs"
-local resourceDir = "/resources"
-local conditionalDir = "/conditionals"
+-- Load the IDLE behavior, because we're going to be running it frequently
+if not os.loadAPI(shell.resolve(verbDir) .. "IDLE")
 
 -- SwarmDrone Class Definition
 local function SwarmDrone()
@@ -39,7 +43,7 @@ local function SwarmDrone()
 		-- Load the Behavior lists
 		local files = fs.list(shell.resolve(behaviorDir))
 		for i, file in ipairs(files) do
-			local fileName = shell.resolve(behaviorDir) .. "/" .. file
+			local fileName = shell.resolve(behaviorDir) .. file
 			if not fs.isDir(fileName) then
 				-- Extract and decode the behavior information
 				local f = fs.open(fileName, "r")
@@ -58,7 +62,7 @@ local function SwarmDrone()
 			-- subdirectories can be used for alternate behavior sets.
 			
 		-- DEBUG
-		for k, v in pairs(self.behaviors) do print (k) for key, value in pairs(v) do print(key, value) end end
+		for k, v in pairs(self.behaviors) do print (k) for key, value in pairs(v) do print(key..": ", value) end end
 		
 		-- TODO: Collect data about self and immediate surroundings (needs RESOURCE definitions)
 		
@@ -100,6 +104,12 @@ local function SwarmDrone()
 			Step 3: Determine Active Behavior via priority, queue, fuzzy logic, etc.
 			Step 4: Execute Active Behavior
 		]]--
+		
+		if false then
+			-- FIXME: Determine which behavior we're actually going to run
+		else
+			IDLE() -- Execute the idle behavior
+		end
 	end
 
 	return self
@@ -107,5 +117,8 @@ end -- EOF SwarmDrone Definition
 
 local drone = SwarmDrone()
 drone.init()
+self.tick()
 
+-- Unload global libs
+os.unloadAPI(shell.resolve(verbDir) .. "IDLE")
 os.unloadAPI(shell.resolve("") .. "/lib/JSON")
