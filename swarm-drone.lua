@@ -15,7 +15,7 @@ if not os.loadAPI(shell.resolve(libDir) .. "JSON") then error("Failed to load JS
 local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load libs normally was too hard.
 
 -- Load the IDLE behavior, because we're going to be running it frequently
-if not os.loadAPI(shell.resolve(verbDir) .. "IDLE")
+if not os.loadAPI(shell.resolve(verbDir) .. "IDLE") then error("Failed to load IDLE behavior, aborting.") end
 
 -- SwarmDrone Class Definition
 local function SwarmDrone()
@@ -117,7 +117,7 @@ end -- EOF SwarmDrone Definition
 
 local drone = SwarmDrone()
 drone.init()
-self.tick()
+drone.tick()
 
 -- Unload global libs
 os.unloadAPI(shell.resolve(verbDir) .. "IDLE")
