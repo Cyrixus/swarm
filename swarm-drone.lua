@@ -56,9 +56,9 @@ local function SwarmDrone()
 			end
 		end -- repeat for each file in the primary directory. In the future,
 			-- subdirectories can be used for alternate behavior sets.
-		
-		-- DEBUG: Print all the behaviors
-		dump(self.behaviors)
+			
+		-- DEBUG
+		for k, v in pairs(self.behaviors) do for key, value in pairs(value) do print(key, value) end end
 		
 		-- TODO: Collect data about self and immediate surroundings (needs RESOURCE definitions)
 		
