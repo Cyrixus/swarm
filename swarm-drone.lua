@@ -5,7 +5,7 @@
 -- Load the JSON encoding/decoding library
 -- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
 if not os.loadAPI(shell.resolve("") .. "/lib/JSON") then error("Failed to load JSON API, aborting.") end
-JSON = JSON.OBJDEF:new() -- Because, you know, just letting us load libs normally was too hard.
+local JSON = JSON.OBJDEF:new() -- Because, you know, just letting us load libs normally was too hard.
 
 -- Constants
 local behaviorDir = "/behaviors"
@@ -58,7 +58,7 @@ local function SwarmDrone()
 			-- subdirectories can be used for alternate behavior sets.
 			
 		-- DEBUG
-		for k, v in pairs(self.behaviors) do for key, value in pairs(value) do print(key, value) end end
+		for k, v in pairs(self.behaviors) do print (k) for key, value in pairs(v) do print(key, value) end end
 		
 		-- TODO: Collect data about self and immediate surroundings (needs RESOURCE definitions)
 		
