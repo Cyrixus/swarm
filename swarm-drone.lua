@@ -2,6 +2,16 @@
 	Core drone behavior.
 ]]--
 
+-- Load the JSON encoding/decoding library
+-- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
+local JSON = (loadfile "JSON.lua")()
+
+-- Constants
+local behaviorDir = "/behaviors"
+local verbDir = "/verbs"
+local resourceDir = "/resources"
+local conditionalDir = "/conditionals"
+
 -- SwarmDrone Class Definition
 local function SwarmDrone()
 	local self = {} -- 'this' reference
@@ -10,6 +20,9 @@ local function SwarmDrone()
 	self.startTickSecondTime = nil
 	self.ticks = 0
 	self.ticksPerSecond = 0
+	
+	-- Behaviors
+	self.behaviors = {}
 
 	function init()
 		--[[ TODO
@@ -18,6 +31,32 @@ local function SwarmDrone()
 			Step 2: Collect data about self and immediate surroundings
 			Step 3: Announce self to swarm-net, if possible
 		]]--
+		
+		-- Reset the behavior array, just in case
+		self.behaviors = {}
+		
+		-- Load the Behavior lists
+		for file in fs.list(shell.resolve(behaviorDir) do
+			if not fs.isDir(file) then
+				-- Extract and decode the behavior information
+				local behaviorTable = JSON:decode(fs.open(file).readAll())
+				
+				-- Append all the behaviors to our master list of behaviors
+				for k, behavior in behaviorTable do
+					self.behaviors[#self.behaviors + 1] = behavior
+				end
+			end
+		end -- repeat for each file in the primary directory. In the future,
+			-- subdirectories can be used for alternate behavior sets.
+		
+		-- DEBUG: Print all the behaviors
+		for k, b in self.behaviors do
+			print(b)
+		end
+		
+		-- TODO: Collect data about self and immediate surroundings (needs RESOURCE definitions)
+		
+		-- TODO: Announce self to swarm-net
 	end
 
 	function tick()
@@ -58,3 +97,6 @@ local function SwarmDrone()
 	end
 
 end -- EOF SwarmDrone Definition
+
+local drone = SwarmDrone()
+drone.init()
