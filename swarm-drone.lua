@@ -4,10 +4,21 @@
 
 -- Constants
 local libDir = "/lib/"
+-- Directories for all the key components of the Behavior Engine
 local behaviorDir = "/behaviors/"
 local verbDir = "/verbs/"
 local resourceDir = "/resources/"
 local conditionalDir = "/conditionals/"
+-- Directories for information specific to this drone.
+local identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
+
+
+-- Function for loading libs
+local function loadLib(libLocation)
+	if not os.loadAPI(libLocation) then
+		print("Failed to load library [" .. libLocation .. "], returning false.")
+	end
+end
 
 -- Load the JSON encoding/decoding library
 -- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
@@ -68,6 +79,10 @@ local function SwarmDrone()
 		for k, v in pairs(self.behaviors) do print (k) for key, value in pairs(v) do print(key..": ", value) end end
 		
 		-- TODO: Collect data about self and immediate surroundings (needs RESOURCE definitions)
+		local isTurtle = checkConditional("IS_TURTLE")
+		print("Is turtle: ", true)
+		
+		
 		
 		-- TODO: Announce self to swarm-net
 	end
@@ -113,6 +128,20 @@ local function SwarmDrone()
 		else
 			IDLE.execute() -- Execute the idle behavior
 		end
+	end
+	
+	local function checkConditional(conditional, params)
+		local conLoc = shell.resolve("") .. conditionalDir .. conditional
+		if loadLib(conLoc) then
+			-- Call the conditional, with the provided params
+			local result = _G[conditional].compare(params)
+			
+			-- Clean up the file when we're done
+			os.unloadAPI(conLoc)
+			
+			if result > 1 then return true end
+		end
+		return false
 	end
 
 	return self

@@ -1,7 +1,7 @@
 [
-    {"c":["IS_TURTLE", "LOW_FUEL"], "v":"REFUEL", "t":"ALL"}
+    {"c":["IS_TURTLE", "LOW_FUEL"], "v":"REFUEL", "t":"ALL"},
     {"c":["IS_TURTLE", "LOW_FUEL"], "v":"GOTO", "t":"home"},
-    {"c":["IS_TURTLE", "INVENTORY_FULL", "HAS_LOCATION"], "v":"DEPOSIT", "t":"DEPOT"}
-    {"c":["IS_TURTLE", "HAS_NEARBY_LOCATION"], "v":"EXCAVATE", "t":"GT_COPPER"}
+    {"c":["IS_TURTLE", "INVENTORY_FULL", "HAS_LOCATION"], "v":"DEPOSIT", "t":"DEPOT"},
+    {"c":["IS_TURTLE", "HAS_NEARBY_LOCATION"], "v":"EXCAVATE", "t":"GT_COPPER"},
     {"c":["IS_TURTLE"], "v":"FIND", "t":"GT_COPPER"}
 ]
