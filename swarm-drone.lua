@@ -17,7 +17,7 @@ local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load lib
 
 -- Load the IDLE behavior, because we're going to be running it frequently
 local idleLoc = shell.resolve("") .. verbDir .. "IDLE"
-if not os.loadAPI(idleLoc) then error("Failed to load IDLE behavior @ [" .. idleLoc .. ", aborting.") end
+if not os.loadAPI(idleLoc) then error("Failed to load IDLE behavior @ [" .. idleLoc .. "], aborting.") end
 
 -- SwarmDrone Class Definition
 local function SwarmDrone()
