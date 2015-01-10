@@ -50,13 +50,38 @@ local function SwarmDrone()
 			-- Call the conditional, with the provided params
 			local result = _G[conditional].compare(params)
 			
-			-- Clean up the file when we're done
+			-- Clean up the API when we're done
 			os.unloadAPI(conLoc)
 			
-			if result > 1 then return true end
+			if result >= 1 then return true end
 		end
 		return false
 	end
+	
+	local function executeVerb(verb, params)
+		local verbLoc = shell.resolve("") .. verbDir .. verb
+		if loadLib(verbLoc) then
+			-- Execute the verb, with the provided params
+			_G[verb].execute(verb)
+			
+			-- Clean up the API when we're done
+			os.unloadAPI(verbLoc)
+		end
+	end
+	
+	local function matchResourceByName(resource, name)
+		local resLoc = shell.resolve("") .. resourceDir .. resource
+		if loadLib(resLoc) then
+			-- Perform the match
+			local result = _G[resource].matchName(name)
+			
+			-- Clean up the API when we're done
+			os.unloadAPI(resLoc)
+			if result >= 1 then return true end
+		end
+		return false
+	end
+	
 
 	--[[ Initialization ]]--
 	function self.init()
@@ -97,7 +122,7 @@ local function SwarmDrone()
 		
 		-- TODO: Collect data about self and immediate surroundings (needs RESOURCE definitions)
 		local isTurtle = checkConditional("IS_TURTLE")
-		print("Is turtle: ", true)
+		print("Is turtle: ", isTurtle)
 		
 		
 		
