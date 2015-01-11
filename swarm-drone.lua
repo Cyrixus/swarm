@@ -190,19 +190,19 @@ local function SwarmDrone()
 	local self = {} -- 'this' reference
 	
 	-- UUID
-	local self.uuid = UUID()
+	self.uuid = UUID()
 	function self.uuid() return self.uuid end
 
 	-- Tick Info
-	local self.startTickSecondTime = nil
-	local self.ticks = 0
-	local self.ticksPerSecond = 0
+	self.startTickSecondTime = nil
+	self.ticks = 0
+	self.ticksPerSecond = 0
 	
 	-- Idle Tick Info
-	local self.lastIdleTime = 0
+	self.lastIdleTime = 0
 	
 	-- Behaviors
-	local self.behaviors = {}
+	self.behaviors = {}
 
 	--[[ Initialization ]]--
 	function self.init()
