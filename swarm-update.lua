@@ -1,5 +1,7 @@
 --[[ swarm-update.lua
     Fetches the latest version of swarm from github, then updates all swarm files.
+    
+    Matthew DiBernardo [01.10.2015]
 ]]--
 
 -- Default host definitions

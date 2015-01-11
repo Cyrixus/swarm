@@ -1,5 +1,7 @@
 --[[ mobility
     A self-tracking turtle API for use with swarm.
+    
+    Matthew DiBernardo [01.10.2015]
 ]]--
 
 --[[ Facing Vecs ]]--
@@ -234,17 +236,20 @@ end
 -- but they do ensure that the block ahead is actually clear before returning, even in
 -- cases such as sand and gravel, where another block can appear in the same place.
 function dig()
-    while turtle.dig() do
+    while turtle.detect() do
+        turtle.dig()
     end
 end
 
 function digUp()
-    while turtle.digUp() do
+    while turtle.detectUp() do
+        turtle.digUp()
     end
 end
 
 function digDown()
-    while turtle.digDown() do
+    while turtle.detectDown() do
+        turtle.digDown()
     end
 end
 

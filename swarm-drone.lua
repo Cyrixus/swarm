@@ -1,5 +1,7 @@
 --[[ swarm-drone.lua
 	Core drone behavior.
+	
+	Matthew DiBernardo [01.10.2015]
 ]]--
 
 -- Constants
@@ -63,10 +65,14 @@ function matchResourceByName(resource, name)
 end
 
 -- Load the JSON encoding/decoding library
--- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON.lua)
-local apiLocation = shell.resolve("") .. libDir.. "JSON"
+-- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON)
+local apiLocation = shell.resolve("") .. libDir .. "JSON"
 if not os.loadAPI(apiLocation) then error("Failed to load JSON API @ [" .. apiLocation .. "], aborting.") end
 local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load libs normally was too hard.
+
+-- Load the mobility turtle API
+apiLocation = shell.resolve("") .. libDir .. "mobility"
+if not os.loadAPI(apiLocation) then error("Failed to load mobility API @ [" .. apiLocation .. "], aborting." end)
 
 -- Load the IDLE behavior, because we're going to be running it frequently
 local idleLoc = shell.resolve("") .. verbDir .. "IDLE"
@@ -235,5 +241,6 @@ end
 
 --[[ Lib Cleanup ]]
 -- Unload global libs
-os.unloadAPI(shell.resolve(verbDir) .. "IDLE")
-os.unloadAPI(shell.resolve("") .. "/lib/JSON")
+os.unloadAPI(shell.resolve("") .. verbDir .. "IDLE")
+os.unloadAPI(shell.resolve("") .. libDir .. "mobility")
+os.unloadAPI(shell.resolve("") .. libDir .. "JSON")
