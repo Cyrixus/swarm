@@ -56,7 +56,12 @@ function checkConditional(conditional, params)
     local conLoc = relativeDir .. conditionalDir .. conditional
     if loadLib(conLoc) then
         -- Call the conditional, with the provided params
-        local result = _G[conditional].compare(unpack(params))
+        local result = nil
+        if type(params) == "table" then
+            result = _G[conditional].compare(unpack(params))
+        else
+            result = _G[conditional].compare(params)
+        end
         
         -- Clean up the API when we're done
         os.unloadAPI(conLoc)
@@ -70,7 +75,11 @@ function executeVerb(verb, params)
     local verbLoc = relativeDir .. verbDir .. verb
     if loadLib(verbLoc) then
         -- Execute the verb, with the provided params
-        _G[verb].execute(unpack(params))
+        if type(params) == "table" then
+            _G[verb].execute(unpack(params))
+        else
+            _G[verb].execute(params)
+        end
         
         -- Clean up the API when we're done
         os.unloadAPI(verbLoc)
