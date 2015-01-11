@@ -1,6 +1,6 @@
 function execute(drone)
     -- Save our current position
-    createPointLocationXZ("LASTPOS", nil, nil, nil, nil, drone.uuid())
+    createPointLocationXZ("LASTPOS", nil, nil, nil, nil, drone.getUUID())
     
     -- Listen for OS messages, with a timeout
     local timerID = os.startTimer(1) -- 1 second

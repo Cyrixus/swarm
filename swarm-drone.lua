@@ -191,7 +191,7 @@ local function SwarmDrone()
 	
 	-- UUID
 	self.uuid = UUID()
-	function self.uuid() return self.uuid end
+	function self.getUUID() return self.uuid end
 
 	-- Tick Info
 	self.startTickSecondTime = nil
