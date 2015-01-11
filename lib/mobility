@@ -94,7 +94,7 @@ end
 --[[ Basic Movement Functions  ]]--
 function moveForward(count)
     local count = count
-    while count do
+    while count > 0 do
         if turtle.forward() then
             count = count - 1
             currentPosition = currentPosition + facings[currentFacing]
@@ -107,7 +107,7 @@ end
 
 function moveBack(count)
     local count = count
-    while count do
+    while count > 0 do
         if turtle.back() then
             count = count - 1
             currentPosition = currentPosition - facings[currentFacing]
@@ -120,7 +120,7 @@ end
 
 function moveUp(count)
     local count = count
-    while count do
+    while count > 0 do
         if turtle.up() then
             count = count - 1
             currentPosition = currentPosition + up
@@ -133,7 +133,7 @@ end
 
 function moveDown(count)
     local count = count
-    while count do
+    while count > 0 do
         if turtle.down() then
             count = count - 1
             currentPosition = currentPosition + down
@@ -148,7 +148,7 @@ end
 --[[ Turning Methods ]]--
 function turnRight(count)
     local count = count
-    while count do
+    while count > 0 do
         if turtle.turnRight() then
             count = count - 1
             setIntFacing(math.fmod(getFacingInt(currentFacing) + 1, 4))
@@ -161,7 +161,7 @@ end
 
 function turnLeft(count)
     local count = count
-    while count do
+    while count > 0 do
         if turtle.turnLeft() then
             count = count - 1
             setIntFacing(math.fmod(getFacingInt(currentFacing) - 1, 4))
