@@ -20,10 +20,10 @@ function execute(resource)
     for i = 1, 16, 1 do
         local success, item = turtle.getItemDetail(i)
         if success then 
-            if matchResourceByName(resource, item.name) then
+            if swarmlib.matchResourceByName(resource, item.name) then
                 if turtle.select(i) and turtle.place() then
                     local pos = mobility.getPosition() + mobility.facings.north
-                    createPointLocationXZ("DEPOT", pos.x, pos.z, pos.y)
+                    swarmlib.createPointLocationXZ("DEPOT", pos.x, pos.z, pos.y)
                 end
             end
         end

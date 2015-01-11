@@ -6,7 +6,7 @@ function compare(locID, distance)
     
     distance = distance or 0
     
-    local targetLoc = getClosestLocation(locID)
+    local targetLoc = swarmlib.getClosestLocation(locID)
     if not targetLoc then return end
     
     -- Check range and stop if we're close enough

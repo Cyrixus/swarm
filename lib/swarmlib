@@ -5,6 +5,17 @@
 ]]--
 
 
+--[[ Constants ]]--
+libDir = "/lib/"
+-- Directories for all the key components of the Behavior Engine
+behaviorDir = "/behaviors/"
+verbDir = "/verbs/"
+resourceDir = "/resources/"
+conditionalDir = "/conditionals/"
+-- Directories for information specific to this drone.
+identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
+locationsDir = "/id/locs/"
+
 --[[ Helper Methods ]]--
 -- Function for loading libs
 local function loadLib(libLocation)

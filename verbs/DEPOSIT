@@ -11,7 +11,7 @@ function execute(resource)
     
     if not resource then return end
     
-    local targetLoc = getClosestLocation("DEPOT")
+    local targetLoc = swarmlib.getClosestLocation("DEPOT")
     if not targetLoc then return end
     
     -- Face the Depot
@@ -21,10 +21,10 @@ function execute(resource)
     for i = 1, 16, 1 do
         local success, item = turtle.getItemDetail(i)
         if success then 
-            if matchResourceByName(resource, item.name) then
+            if swarmlib.matchResourceByName(resource, item.name) then
                 if not turtle.select(i) or not turtle.drop() then
-                    executeVerb("CONSTRUCT_DEPOT")
-                    deleteLocation(targetLoc)
+                    swarmlib.executeVerb("CONSTRUCT_DEPOT")
+                    swarmlib.deleteLocation(targetLoc)
                     return
                 end
             end

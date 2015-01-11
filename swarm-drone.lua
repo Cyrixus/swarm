@@ -4,17 +4,8 @@
 	Matthew DiBernardo [01.10.2015]
 ]]--
 
--- Constants
+--[[ Constants ]]--
 local libDir = "/lib/"
--- Directories for all the key components of the Behavior Engine
-local behaviorDir = "/behaviors/"
-local verbDir = "/verbs/"
-local resourceDir = "/resources/"
-local conditionalDir = "/conditionals/"
--- Directories for information specific to this drone.
-local identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
-local locationsDir = "/id/locs/"
-
 
 --[[ Load Libraries ]]--
 -- Load the JSON encoding/decoding library
@@ -32,7 +23,7 @@ apiLocation = shell.resolve("") .. libDir .. "swarmlib"
 if not os.loadAPI(apiLocation) then error("Failed to load swarmlib API @ [" .. apiLocation .. "], aborting.") end
 
 -- Load the IDLE behavior, because we're going to be running it frequently
-local idleLoc = shell.resolve("") .. verbDir .. "IDLE"
+local idleLoc = shell.resolve("") .. swarmlib.verbDir .. "IDLE"
 if not os.loadAPI(idleLoc) then error("Failed to load IDLE behavior @ [" .. idleLoc .. "], aborting.") end
 
 
@@ -44,7 +35,7 @@ local function SwarmDrone()
 	local self = {} -- 'this' reference
 	
 	-- UUID
-	self.uuid = UUID()
+	self.uuid = swarmlib.UUID()
 	function self.getUUID() return self.uuid end
 
 	-- Tick Info
@@ -68,9 +59,9 @@ local function SwarmDrone()
 		]]--
 		
 		-- Create the id and id/locs folders if they don't already exist
-		local idDir = shell.resolve("") .. identityDir
+		local idDir = shell.resolve("") .. swarmlib.identityDir
 		if not fs.exists(idDir) then fs.makeDir(idDir) end
-		idDir = shell.resolve("") .. locationsDir
+		idDir = shell.resolve("") .. swarmlib.locationsDir
 		if not fs.exists(idDir) then fs.makeDir(idDir) end
 		
 		
@@ -78,9 +69,9 @@ local function SwarmDrone()
 		self.behaviors = {}
 		
 		-- Load the Behavior lists
-		local files = fs.list(shell.resolve("") .. behaviorDir)
+		local files = fs.list(shell.resolve("") .. swarmlib.behaviorDir)
 		for i, file in ipairs(files) do
-			local fileName = shell.resolve("") .. behaviorDir .. file
+			local fileName = shell.resolve("") .. swarmlib.behaviorDir .. file
 			print(fileName, " : ", file)
 			if not fs.isDir(fileName) then
 				-- Extract and decode the behavior information
@@ -110,7 +101,7 @@ local function SwarmDrone()
 		
 		--[[ Check for/create important id files ]]--
 		-- Fetch uuid, if it exists
-		local uuidFile = shell.resolve("") .. identityDir .. "uuid"
+		local uuidFile = shell.resolve("") .. swarmlib.identityDir .. "uuid"
 		if fs.exists(uuidFile) and not fs.isDir(uuidFile) then
 			local f = fs.open(uuidFile, "r")
 			if not f then
@@ -152,21 +143,21 @@ local function SwarmDrone()
 		
 		
 		--[[ TURTLE-ONLY INIT ]]--
-		local isTurtle = checkConditional("IS_TURTLE")
+		local isTurtle = swarmlib.checkConditional("IS_TURTLE")
 		if not isTurtle then
 			return
 		end
 		
 		-- Check Immediate Surroundings
 		print("Turtle detected! Performing turtle-only initialization...")
-		executeVerb("CHECK_SURROUNDINGS")
+		swarmlib.executeVerb("CHECK_SURROUNDINGS")
 		
 		-- Save the starting position with the identifier HOME, unless one already exists
 		local doesHomeExist = false
-		forEachLocation(function() doesHomeExist = true end, "HOME")
+		swarmlib.forEachLocation(function() doesHomeExist = true end, "HOME")
 		
 		if not doesHomeExist then
-			createPointLocationXZ("HOME")
+			swarmlib.createPointLocationXZ("HOME")
 		end
 		
 		-- Attempt to determine facing
@@ -231,7 +222,7 @@ local function SwarmDrone()
 			local conditionals = behavior['c'] -- 'c' for 'conditions'
 			local isValid = true
 			for conditional, params in pairs(conditionals) do
-				if not checkConditional(conditional, params) then
+				if not swarmlib.checkConditional(conditional, params) then
 					isValid = false
 					break
 				end
@@ -252,7 +243,7 @@ local function SwarmDrone()
 				return true
 			end
 			
-			executeVerb(activeVerb, verbParams)
+			swarmlib.executeVerb(activeVerb, verbParams)
 		else
 			-- If we don't have an active verb, just chill
 			doIDLE()
@@ -300,6 +291,7 @@ end
 
 --[[ Lib Cleanup ]]
 -- Unload global libs
-os.unloadAPI(shell.resolve("") .. verbDir .. "IDLE")
+os.unloadAPI(shell.resolve("") .. swarmlib.verbDir .. "IDLE")
+os.unloadAPI(shell.resolve("") .. libDir .. "swarmlib")
 os.unloadAPI(shell.resolve("") .. libDir .. "mobility")
 os.unloadAPI(shell.resolve("") .. libDir .. "JSON")

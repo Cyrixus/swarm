@@ -6,7 +6,7 @@ local function getFuelItemSlot(validFuel)
     for i = 1, 16, 1 do
         local success, item = turtle.getItemDetail(i)
         if success then 
-            if matchResourceByName(validFuel, item.name) then return i end
+            if swarmlib.matchResourceByName(validFuel, item.name) then return i end
         end
     end
     return 0
