@@ -109,7 +109,7 @@ function execute(resource)
     -- Determine if we've already been strip mining and pick up our place
     local lastMiningLoc = swarmlib.getClosestLocation("STRIP_MINE_LAST_LOC")
     if lastMiningLoc then
-        if moveTo(loc) then
+        if moveTo(lastMiningLoc) then
             mine(resource)
         end
         return
@@ -119,7 +119,7 @@ function execute(resource)
     -- that we want to dig out, go there.
     local currentChunk = swarmlib.getClosestLocation("STRIP_MINE_CHUNK_START")
     if currentChunk then
-        if moveTo(loc) then
+        if moveTo(currentChunk) then
             mobility.turn("north")
             mobility.digDown()
             mobility.moveDown(1)
@@ -133,7 +133,7 @@ function execute(resource)
     local pos = mobility.getPosition()
     local nextChunkStartX = pos.x + (16 - math.fmod(pos.x + 16, 16))
     local nextChunkStartZ = pos.z - math.fmod(pos.z, 16)
-    local nextChunkStartY = currentChunk.y or pos.y
+    local nextChunkStartY = pos.y
     
     swarmlib.createPointLocationXZ("STRIP_MINE_CHUNK_START", nextChunkStartX, nextChunkStartZ, nextChunkStartY, "north", uuid)
 end
