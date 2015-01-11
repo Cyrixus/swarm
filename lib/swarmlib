@@ -70,7 +70,7 @@ function executeVerb(verb, params)
     local verbLoc = relativeDir .. verbDir .. verb
     if loadLib(verbLoc) then
         -- Execute the verb, with the provided params
-        _G[verb].execute(verb)
+        _G[verb].execute(params)
         
         -- Clean up the API when we're done
         os.unloadAPI(verbLoc)
