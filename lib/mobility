@@ -1,1 +1,337 @@
-local position = vector.new(0, 0, 0)
+--[[ mobility
+    A self-tracking turtle API for use with swarm.
+]]--
+
+--[[ Facing Vecs ]]--
+local facings = { 
+    "north" = vector.new(0, 0, -1),  -- Negative Z
+    "east" = vector.new(1, 0, 0),    -- Positive X
+    "south" = vector.new(0, 0, 1),   -- Positive Z
+    "west" = vector.new(-1, 0, 0)    -- Negative X
+}
+    
+local intFacings = {
+    0 = "north",
+    1 = "east",
+    2 = "south",
+    3 = "west"
+}
+
+local up = vector.new(0, 1, 0)
+local down = vector.new(0, -1, 0)
+
+
+--[[ Current State ]]--
+local currentPosition = vector.new(0, 0, 0) -- Assume relative origin as start, unless supplied in init
+local currentFacing = "north"
+
+
+--[[ Accessors for Position & Facing ]]--
+function getPosition()
+    return currentPosition
+end
+
+function getFacing()
+    return currentFacing
+end
+
+local function getFacingInt(facing)
+    for i, f in pairs(intFacings) do
+        if f == facing then
+            return i
+        end
+    end
+    -- This should never happen unless someone fucked up
+    error("MOBILITY: getFacingInt() could not complete because facing was invalid [" .. facing .. "]")
+end
+
+function getIntFacing()
+    getFacingInt(currentFacing)
+end
+
+
+-- [[ Init ]]--
+-- (uses height instead of y to avoid confusing nomenclature, lateral movement occurs on the xz plane)
+function init(x, z, height, facing)
+    x = x or 0
+    z = z or 0
+    height = height or 0
+    facing = facing or "north"
+    
+    currentPosition = vector.new(x, height, z)
+    
+    -- Validate the facing, defaulting to north if the user types something retarded.
+    currentFacing = "north"
+    for f, v in pairs(facings) do
+        if f == facing then
+            currentFacing = f
+            break
+        end
+    end
+end
+
+
+--[[ Basic Movement Functions  ]]--
+function moveForward(count)
+    local count = count
+    while count do
+        if turtle.forward() then
+            count = count - 1
+            currentPosition = currentPosition + facings[currentFacing]
+        else
+            return false -- Couldn't complete the full movement
+        end
+    end
+    return true -- Completed the full movement
+end
+
+function moveBack(count)
+    local count = count
+    while count do
+        if turtle.back() then
+            count = count - 1
+            currentPosition = currentPosition - facings[currentFacing]
+        else
+            return false -- Couldn't complete the full movement
+        end
+    end
+    return true -- Completed the full movement
+end
+
+function moveUp(count)
+    local count = count
+    while count do
+        if turtle.up() then
+            count = count - 1
+            currentPosition = currentPosition + up
+        else
+            return false -- Couldn't complete the full movement
+        end
+    end
+    return true -- Completed the full movement
+end
+
+function moveDown(count)
+    local count = count
+    while count do
+        if turtle.down() then
+            count = count - 1
+            currentPosition = currentPosition + down
+        else
+            return false -- Couldn't complete the full movement
+        end
+    end
+    return true -- Completed the full movement
+end
+
+
+--[[ Turning Methods ]]--
+function turnRight(count)
+    local count = count
+    while count do
+        if turtle.turnRight() then
+            count = count - 1
+            currentFacing = math.fmod(getIntFacing(currentFacing) + 1)
+        else
+            return false
+        end
+    end
+    return true
+end
+
+function turnLeft(count)
+    local count = count
+    while count do
+        if turtle.turnLeft() then
+            count = count - 1
+            currentFacing = math.fmod(getIntFacing(currentFacing) - 1)
+        else
+            return false
+        end
+    end
+    return true
+end
+
+function turn(facing)
+    getIntFacing(facing) -- So long as this doesn't throw an error, our target facing should be valid.
+    while currentFacing ~= facing do
+        if math.fmod(getIntFacing(currentFacing) - 1) == getIntFacing(facing) then
+            if not turnLeft(1) then return false end
+        else
+            if not turnRight(1) then return false end
+        end
+    end
+    return true
+end
+
+--[[ Move Towards ]]--
+function moveTowardVec(target)
+    -- First, make sure we're not already there
+    if target.x == currentPosition.x and target.y == currentPosition.y and target.z == currentPosition.z then
+        return true -- We're already there!
+    end
+    
+    -- Figure out which direction we need to head to get there
+    local dir = target - currentPosition
+    
+    -- First, attempt to get on the same y-level
+    if dir.y > 0 then
+        if moveUp(1) then return true end
+    end
+    
+    if dir.y < 0 then
+        if moveDown(1) then return true end
+    end
+    
+    -- Otherwise, we were already on the same plane, or can't move up
+    -- right now. Try getting to the same place on the north-south axis.
+    
+    -- Need to go South
+    if dir.z > 0 then
+        if turn("south") then
+            if moveForward(1) then return true end
+        end
+        -- TODO: Should we be worried if we can't turn?
+    end
+    
+    -- Need to go North
+    if dir.z < 0 then
+        if turn("north") then
+            if moveForward(1) then return true end
+        end
+    end
+    
+    -- Otherwise, we're already on the same North-South axis, or we're stuck.
+    -- Try the East-West!
+    
+    -- Need to go East
+    if dir.x > 0 then
+        if turn("east") then
+            if moveForward(1) then return true end
+        end
+    end
+    
+    -- Need to go West
+    if dir.x < 0 then
+        if turn("west") then
+            if moveForward(1) then return true end
+        end
+    end
+    
+    -- Otherwise, we can't move in a direction that would put us closer to the objective
+    return false
+end
+
+function moveTowardXZ(x, z, height)
+    x = x or 0
+    z = z or 0
+    height = height or 0
+    return moveTowardVec(vector.new(x, z, height))
+end
+
+--[[ Dig Methods ]]--
+-- mobility.dig() methods don't actually move in a direction (except the digToward() set)
+-- but they do ensure that the block ahead is actually clear before returning, even in
+-- cases such as sand and gravel, where another block can appear in the same place.
+function dig()
+    while turtle.dig() do
+    end
+end
+
+function digUp()
+    while turtle.digUp() do
+    end
+end
+
+function digDown()
+    while turtle.digDown() do
+    end
+end
+
+--[[ Dig Toward ]]--
+function moveTowardVec(target)
+    -- First, make sure we're not already there
+    if target.x == currentPosition.x and target.y == currentPosition.y and target.z == currentPosition.z then
+        return true -- We're already there!
+    end
+    
+    -- Figure out which direction we need to head to get there
+    local dir = target - currentPosition
+    
+    -- First, attempt to get on the same y-level
+    if dir.y > 0 then
+        if not moveUp(1) then 
+            digUp()
+            if moveUp(1) then return true end
+        else
+            return true
+        end
+    end
+    
+    if dir.y < 0 then
+        if not moveDown(1) then
+            digDown()
+            if moveDown(1) then return true end
+        else
+            return true
+        end
+    end
+    
+    -- Otherwise, we were already on the same plane, or can't move up
+    -- right now. Try getting to the same place on the north-south axis.
+    
+    -- Need to go South
+    if dir.z > 0 then
+        if turn("south") then
+            if not moveForward(1) then
+                dig()
+                if moveForward(1) then return true end
+            else
+                return true
+            end
+        end
+        -- TODO: Should we be worried if we can't turn?
+    end
+    
+    -- Need to go North
+    if dir.z < 0 then
+        if turn("north") then
+            if not moveForward(1) then
+                dig()
+                if moveForward(1) then return true end
+            else
+                return true
+            end
+        end
+    end
+    
+    -- Otherwise, we're already on the same North-South axis, or we're stuck.
+    -- Try the East-West!
+    
+    -- Need to go East
+    if dir.x > 0 then
+        if turn("east") then
+            if not moveForward(1) then
+                dig()
+                if moveForward(1) then return true end
+            else
+                return true
+            end
+        end
+    end
+    
+    -- Need to go West
+    if dir.x < 0 then
+        if turn("west") then
+            if not moveForward(1) then
+                dig()
+                if moveForward(1) then return true end
+            else
+                return true
+            end
+        end
+    end
+    
+    -- Otherwise, we can't move in a direction that would put us closer to the objective
+    return false
+end
