@@ -55,9 +55,10 @@ function mine(resource)
             for i = 1, 16, 1 do
                 local item = turtle.getItemDetail(i)
                 if success then
-                    if not item.name == "minecraft:gravel" and not item.name == "minecraft:sand"
-                    if swarmlib.matchResourceByName("LOW_VALUE_BLOCK", item.name) then
-                        if turtle.select(i) then turtle.place() end
+                    if not item.name == "minecraft:gravel" and not item.name == "minecraft:sand" then
+                        if swarmlib.matchResourceByName("LOW_VALUE_BLOCK", item.name) then
+                            if turtle.select(i) then turtle.place() end
+                        end
                     end
                 end
             end
