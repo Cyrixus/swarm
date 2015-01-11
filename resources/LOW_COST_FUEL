@@ -1,0 +1,7 @@
+function matchName(itemName)
+    if itemName == "Coal" then return true end
+    if itemName == "Charcoal" then return true end
+    if itemName == "Lava Bucket" then return true end
+    
+    return false
+end

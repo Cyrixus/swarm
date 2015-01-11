@@ -1,0 +1,22 @@
+function execute()
+    if not turtle then
+        print("WARNING: CHECK_SURROUNDINGS executed on a non-turtle; aborting.")
+        return
+    end
+    
+    -- FIXME: Should do something with meaningful results
+    local success, data = turtle.inspect()
+    if success then
+        print("CHECK_SURROUNDINGS FOUND: [" .. data.name .. "]")
+    end
+    
+    success, data = turtle.inspectUp()
+    if success then
+        print("CHECK_SURROUNDINGS FOUND: [" .. data.name .. "]")
+    end
+    
+    success, data = turtle.inspectDown()
+    if success then
+        print("CHECK_SURROUNDINGS FOUND: [" .. data.name .. "]")
+    end
+end

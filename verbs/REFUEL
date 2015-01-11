@@ -1,0 +1,39 @@
+-- The minimum level we should try to refuel to in a single go.
+-- Setting this too high can waste fuel items.
+local fuelFullEnoughPercentage = .9
+
+local function getFuelItemSlot(validFuel)
+    for i = 1, 16, 1 do
+        local success, item = turtle.getItemDetail(i)
+        if success then 
+            if matchResourceByName(validFuel, item.name) then return i end
+        end
+    end
+    return 0
+end
+
+function execute(validFuel)
+    if not turtle then
+        print("WARNING: REFUEL executed on a non-turtle; aborting.")
+        return
+    end
+    
+    local maxFuel = turtle.getFuelLimit()
+    local currentFuel = turtle.getFuelLevel()
+    
+    if maxFuel == "unlimited" or maxFuel <= 0 then
+        return -- We don't need to use fuel at all, so stop here.
+    end
+    
+    while currentFuel / maxFuel < fuelFullEnoughPercentage and getFuelItemSlot(validFuel) > 0 do
+        -- Use the fuel item
+        turtle.select(getFuelItemSlot(validFuel))
+        local success, item = turtle.getItemDetail()
+        if success then print("REFUEL: Currently at [" .. currentFuel .. "/" .. maxFuel .. "] using 1 [" .. item.name .. "]") end
+        turtle.refuel(1)
+        
+        -- Check the fuel level again, to see where we are.
+        currentFuel = turtle.getFuelLevel()
+    end
+    print("REFUEL: Finished fueling at [" currentFuel .. "/" .. maxFuel .. "]")
+end

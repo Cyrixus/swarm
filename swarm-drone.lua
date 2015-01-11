@@ -13,6 +13,7 @@ local conditionalDir = "/conditionals/"
 local identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
 
 
+
 -- Function for loading libs
 local function loadLib(libLocation)
 	if not os.loadAPI(libLocation) then
@@ -20,6 +21,45 @@ local function loadLib(libLocation)
 		return false
 	end
 	return true
+end
+
+--[[ Engine Calls ]]--
+function checkConditional(conditional, params)
+	local conLoc = shell.resolve("") .. conditionalDir .. conditional
+	if loadLib(conLoc) then
+		-- Call the conditional, with the provided params
+		local result = _G[conditional].compare(params)
+		
+		-- Clean up the API when we're done
+		os.unloadAPI(conLoc)
+		
+		if result >= 1 then return true end
+	end
+	return false
+end
+
+function executeVerb(verb, params)
+	local verbLoc = shell.resolve("") .. verbDir .. verb
+	if loadLib(verbLoc) then
+		-- Execute the verb, with the provided params
+		_G[verb].execute(verb)
+		
+		-- Clean up the API when we're done
+		os.unloadAPI(verbLoc)
+	end
+end
+
+function matchResourceByName(resource, name)
+	local resLoc = shell.resolve("") .. resourceDir .. resource
+	if loadLib(resLoc) then
+		-- Perform the match
+		local result = _G[resource].matchName(name)
+		
+		-- Clean up the API when we're done
+		os.unloadAPI(resLoc)
+		if result >= 1 then return true end
+	end
+	return false
 end
 
 -- Load the JSON encoding/decoding library
@@ -32,7 +72,8 @@ local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load lib
 local idleLoc = shell.resolve("") .. verbDir .. "IDLE"
 if not os.loadAPI(idleLoc) then error("Failed to load IDLE behavior @ [" .. idleLoc .. "], aborting.") end
 
--- SwarmDrone Class Definition
+
+--[[ SwarmDrone Class Definition ]]--
 local function SwarmDrone()
 	local self = {} -- 'this' reference
 
@@ -41,49 +82,11 @@ local function SwarmDrone()
 	self.ticks = 0
 	self.ticksPerSecond = 0
 	
+	-- Idle Tick Info
+	self.lastIdleTime = os.clock()
+	
 	-- Behaviors
 	self.behaviors = {}
-	
-	
-	--[[ Engine Calls ]]--
-	local function checkConditional(conditional, params)
-		local conLoc = shell.resolve("") .. conditionalDir .. conditional
-		if loadLib(conLoc) then
-			-- Call the conditional, with the provided params
-			local result = _G[conditional].compare(params)
-			
-			-- Clean up the API when we're done
-			os.unloadAPI(conLoc)
-			
-			if result >= 1 then return true end
-		end
-		return false
-	end
-	
-	local function executeVerb(verb, params)
-		local verbLoc = shell.resolve("") .. verbDir .. verb
-		if loadLib(verbLoc) then
-			-- Execute the verb, with the provided params
-			_G[verb].execute(verb)
-			
-			-- Clean up the API when we're done
-			os.unloadAPI(verbLoc)
-		end
-	end
-	
-	local function matchResourceByName(resource, name)
-		local resLoc = shell.resolve("") .. resourceDir .. resource
-		if loadLib(resLoc) then
-			-- Perform the match
-			local result = _G[resource].matchName(name)
-			
-			-- Clean up the API when we're done
-			os.unloadAPI(resLoc)
-			if result >= 1 then return true end
-		end
-		return false
-	end
-	
 
 	--[[ Initialization ]]--
 	function self.init()
@@ -119,18 +122,24 @@ local function SwarmDrone()
 		end -- repeat for each file in the primary directory. In the future,
 			-- subdirectories can be used for alternate behavior sets.
 			
-		-- DEBUG
-		for k, v in pairs(self.behaviors) do print (k) for key, value in pairs(v) do print(key..": ", value) end end
+		print("Successfully loaded [" .. #self.behaviors .. "] behaviors from disk...")
 		
 		-- TODO: Collect data about self and immediate surroundings (needs RESOURCE definitions)
+		--[[ TURTLE-ONLY INIT ]]--
 		local isTurtle = checkConditional("IS_TURTLE")
-		print("Is turtle: ", isTurtle)
-		
-		
+		if isTurtle then
+			print("Turtle detected! Performing turtle-only initialization...")
+			executeVerb("CHECK_SURROUNDINGS")
+		end
 		
 		-- TODO: Announce self to swarm-net
 	end
 
+	--[[ doIDLE ]]--
+	local function doIDLE()
+		IDLE.execute()
+		self.lastIdleTime = os.clock()
+	end
 
 	--[[ Engine Tick Event ]]--
 	local function onTick()
@@ -141,29 +150,62 @@ local function SwarmDrone()
 			Step 4: Execute Active Behavior
 		]]--
 		
-		if false then
-			-- FIXME: Determine which behavior we're actually going to run
-		else
-			IDLE.execute() -- Execute the idle behavior
+		-- Force an IDLE tick if we're approaching the 10 second limit between os.pullEvent() calls
+		local currentTime = os.clock()
+		if currentTime - self.lastIdleTime > 5.0 then -- Every 5.0 seconds
+			doIDLE()
+			return true
 		end
+		
+		-- FIXME: Determine which behavior we're actually going to run
+		local activeVerb = nil
+		local verbParams
+		
+		-- Iterate through all the behaviors and find a valid one
+		for i, behavior in ipairs(self.behaviors) do
+			local conditionals = behavior['c'] -- 'c' for 'conditions'
+			local isValid = true
+			for conditional, params in pairs(conditionals) do
+				if not checkConditional(conditional, params) then
+					isValid = false
+					break
+				end
+			end
+			
+			if isValid then
+				activeVerb = behavior['v'] -- 'v' for 'verb'
+				verbParams = behavior['t'] -- 't' for 'target'
+				break
+			end
+		end
+		
+		-- Execute the active verb
+		if activeVerb then
+			-- Unless it's really IDLE, in which case just doIDLE()
+			if activeVerb == "IDLE" then 
+				doIDLE()
+				return true
+			end
+			
+			executeVerb(activeVerb, verbParams)
+		else
+			-- If we don't have an active verb, just chill
+			doIDLE()
+		end
+		return true
 	end
 	
 	
 	--[[ tick metacall ]]--
 	function self.tick()
 		-- Recalculate ticksPerSecond
-		local currentTime = os.time() -- Gets the minecraft time
+		local currentTime = os.clock() -- Gets the elapsed computer time
 		if self.startTickSecondTime ~= nil then
 			-- If at least a second has elapsed, calculate average t/sec
 			local elapsed = currentTime - self.startTickSecondTime
 			if elapsed > 1.0 then
 				self.ticksPerSecond = self.ticks / elapsed
 				self.ticks = 0
-				self.startTickSecondTime = currentTime
-			
-			-- Avoid some possible issues with time rolling over at
-			-- midnight by reseting the clock
-			elseif elapsed < 0.0 then
 				self.startTickSecondTime = currentTime
 			end
 		else
@@ -172,19 +214,26 @@ local function SwarmDrone()
 		end
 
 		-- DO TICK BEHAVIOR
-		onTick() -- This may not be called EVERY tick(), in the future
+		local continueTicking = onTick() -- This may not be called EVERY tick(), in the future
 
 		-- Increment Tick Counter
 		self.ticks = self.ticks + 1
+		return continueTicking
 	end -- EOF tick()
 
 	return self
-end -- EOF SwarmDrone Definition
+end --[[ EOF SwarmDrone Definition ]]--
 
+
+--[[ Main Execution Loop ]]--
 local drone = SwarmDrone()
 drone.init()
-drone.tick()
+while drone.tick() do
+	-- Do nothing. Repeat.
+end
 
+
+--[[ Lib Cleanup ]]
 -- Unload global libs
 os.unloadAPI(shell.resolve(verbDir) .. "IDLE")
 os.unloadAPI(shell.resolve("") .. "/lib/JSON")

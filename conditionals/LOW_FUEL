@@ -1,11 +1,14 @@
 local lowFuelPercentage = .2 -- consider 20% fuel to be low
 
-function compare()
+function compare(fuelPercentage)
     local maxFuel = turtle.getFuelLimit()
     local currentFuel = turtle.getFuelLevel()
     
     if maxFuel == "unlimited" or maxFuel <= 0 then
         return 0
     end
-    return (1 + lowFuelPercentage) - (currentFuel / maxFuel) -- Results > 1 are considered "truthy"
+    
+    if fuelPercentage then lowFuelPercentage = fuelPercentage end
+    
+    return (1 + lowFuelPercentage) - (currentFuel / maxFuel) -- Results >= 1 are considered "truthy"
 end
