@@ -1,0 +1,5 @@
+function compare(locID)
+    local hasLocation = 0
+    forEachLocation(function() hasLocation = 1 end, locID)
+    return hasLocation
+end

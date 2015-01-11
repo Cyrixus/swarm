@@ -33,8 +33,12 @@ function getPosition()
     return currentPosition
 end
 
-function getFacing()
-    return currentFacing
+function setPositionVec(pos)
+    currentPosition = pos
+end
+
+function setPositionXZ(x, z, height)
+    setPositionVec(vector.new(x, height, z))
 end
 
 local function getFacingInt(facing)
@@ -50,6 +54,22 @@ end
 function getIntFacing()
     getFacingInt(currentFacing)
 end
+
+function setIntFacing(facing)
+    if facing >= 0 and facing <= 3 then
+        currentFacing = intFacings[facing]
+    end
+end
+
+function getFacing()
+    return currentFacing
+end
+
+function setFacing(facing)
+    setIntFacing(getFacingInt(facing))
+end
+
+
 
 
 -- [[ Init ]]--
@@ -254,7 +274,7 @@ function digDown()
 end
 
 --[[ Dig Toward ]]--
-function moveTowardVec(target)
+function digTowardVec(target)
     -- First, make sure we're not already there
     if target.x == currentPosition.x and target.y == currentPosition.y and target.z == currentPosition.z then
         return true -- We're already there!
@@ -339,4 +359,11 @@ function moveTowardVec(target)
     
     -- Otherwise, we can't move in a direction that would put us closer to the objective
     return false
+end
+
+function digTowardXZ(x, z, height)
+    x = x or 0
+    z = z or 0
+    height = height or 0
+    return digTowardVec(vector.new(x, z, height))
 end

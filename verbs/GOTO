@@ -1,0 +1,44 @@
+function execute(locID)
+    if not turtle then
+        print("WARNING: GOTO executed on a non-turtle; aborting.")
+        return
+    end
+    
+    if not mobility then
+        print("WARNING: GOTO requires mobility API; aborting.")
+        return
+    end
+    
+    -- Build a list of potential locations
+    local targetList = {}
+    forEachLocation(function(loc) targetList[#targetList + 1] = loc end, locID)
+    
+    -- If there's none, finish.
+    if #targetList == 0 then return end
+    
+    -- If there's only one, that's what we're after!
+    local targetLoc = nil
+    if #targetList == 1 then
+        targetLoc = targetList[1]
+    end
+    
+    -- If there's more than one, find the closest
+    if #targetList > 1 then
+        for i, l in ipairs(targetList) do
+            if targetLoc == nil then
+                targetLoc = l
+            else
+                local v = vector.new(l.x, l.y, l.z)
+                local vNew = mobility.getPosition() - v
+                local vOld = mobility.getPosition() - targetLoc
+                
+                if vOld:length() > vNew:length() then
+                    targetLoc = l
+                end
+            end
+        end 
+    end
+    
+    -- Then, move towards it
+    mobility.moveTowardXZ(targetLoc.x, targetLoc.z, targetLoc.y)
+end
