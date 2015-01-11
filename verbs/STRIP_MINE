@@ -53,7 +53,7 @@ function mine(resource)
         if mobility.moveUp(chunkLoc.y - pos.y) then
             -- drop something below us to block the hole
             for i = 1, 16, 1 do
-                local success, item = turtle.getItemDetail(i)
+                local item = turtle.getItemDetail(i)
                 if success then
                     if not item.name == "minecraft:gravel" and not item.name == "minecraft:sand"
                     if swarmlib.matchResourceByName("LOW_VALUE_BLOCK", item.name) then

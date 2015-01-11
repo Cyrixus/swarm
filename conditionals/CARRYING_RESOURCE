@@ -8,8 +8,8 @@ function compare(resource, count)
     count = count or 1
     
     for i = 1, 16, 1 do
-        local success, item = turtle.getItemDetail(i)
-        if success then 
+        local item = turtle.getItemDetail(i)
+        if item then 
             if swarmlib.matchResourceByName(resource, item.name) then
                 if turtle.getItemCount(i) >= count then
                     return 1

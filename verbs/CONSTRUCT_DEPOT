@@ -18,8 +18,8 @@ function execute(resource)
     
     -- Place the resource that will be our new DEPOT. Should be some kind of inventory.
     for i = 1, 16, 1 do
-        local success, item = turtle.getItemDetail(i)
-        if success then 
+        local item = turtle.getItemDetail(i)
+        if item then 
             if swarmlib.matchResourceByName(resource, item.name) then
                 if turtle.select(i) and turtle.place() then
                     local pos = mobility.getPosition() + mobility.facings.north

@@ -4,8 +4,8 @@ local fuelFullEnoughPercentage = .9
 
 local function getFuelItemSlot(validFuel)
     for i = 1, 16, 1 do
-        local success, item = turtle.getItemDetail(i)
-        if success then 
+        local item = turtle.getItemDetail(i)
+        if item then 
             if swarmlib.matchResourceByName(validFuel, item.name) then return i end
         end
     end
@@ -28,8 +28,8 @@ function execute(validFuel)
     while currentFuel / maxFuel < fuelFullEnoughPercentage and getFuelItemSlot(validFuel) > 0 do
         -- Use the fuel item
         turtle.select(getFuelItemSlot(validFuel))
-        local success, item = turtle.getItemDetail()
-        if success then print("REFUEL: Currently at [" .. currentFuel .. "/" .. maxFuel .. "] using 1 [" .. item.name .. "]") end
+        local item = turtle.getItemDetail()
+        if item then print("REFUEL: Currently at [" .. currentFuel .. "/" .. maxFuel .. "] using 1 [" .. item.name .. "]") end
         turtle.refuel(1)
         
         -- Check the fuel level again, to see where we are.

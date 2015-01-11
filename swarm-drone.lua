@@ -245,6 +245,7 @@ local function SwarmDrone()
 			end
 			
 			swarmlib.executeVerb(activeVerb, verbParams)
+			
 		else
 			-- If we don't have an active verb, just chill
 			doIDLE()
