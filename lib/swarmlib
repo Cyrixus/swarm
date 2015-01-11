@@ -56,7 +56,7 @@ function checkConditional(conditional, params)
     local conLoc = relativeDir .. conditionalDir .. conditional
     if loadLib(conLoc) then
         -- Call the conditional, with the provided params
-        local result = nil
+        local result = 0
         if type(params) == "table" then
             result = _G[conditional].compare(unpack(params))
         else
@@ -65,7 +65,7 @@ function checkConditional(conditional, params)
         
         -- Clean up the API when we're done
         os.unloadAPI(conLoc)
-        
+        if not result then error("WARNING: Condtitional [" + conditional + "] returned nil result!")
         if result >= 1 then return true end
     end
     return false

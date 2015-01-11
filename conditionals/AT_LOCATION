@@ -7,7 +7,7 @@ function compare(locID, distance)
     distance = distance or 0
     
     local targetLoc = swarmlib.getClosestLocation(locID)
-    if not targetLoc then return end
+    if not targetLoc then return 0 end
     
     -- Check range and stop if we're close enough
     local vTarget = vector.new(targetLoc.x, targetLoc.y, targetLoc.z)
