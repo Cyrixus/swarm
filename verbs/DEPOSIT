@@ -19,8 +19,8 @@ function execute(resource)
     
     -- Deposit whatever matches our target
     for i = 1, 16, 1 do
-        local success, item = turtle.getItemDetail(i)
-        if success then 
+        local item = turtle.getItemDetail(i)
+        if item then 
             if swarmlib.matchResourceByName(resource, item.name) then
                 if not turtle.select(i) or not turtle.drop() then
                     swarmlib.executeVerb("CONSTRUCT_DEPOT")

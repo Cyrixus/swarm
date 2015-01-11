@@ -2,5 +2,5 @@ function matchName(itemName)
     --[[ For now we're just going to detect the things we don't want. In time, this should
         become an inclusive list of materials (particularly ores) which we definitely want
         to extract, ignoring all else. ]]--
-    return not swarmlib.matchResourceByName("LOW_VALUE_ROCK", itemName)
+    return not swarmlib.matchResourceByName("LOW_VALUE_BLOCK", itemName)
 end
