@@ -1,0 +1,21 @@
+function compare(resource, count)
+    if not turtle then
+        print("WARNING: CARRYING_RESOURCE executed on a non-turtle; aborting.")
+        return
+    end
+    
+    if not resource then return 0 end
+    count = count or 1
+    
+    for i = 1, 16, 1 do
+        local success, item = turtle.getItemDetail(i)
+        if success then 
+            if matchResourceByName(resource, item.name) then
+                if turtle.getItemCount(i) >= count then
+                    return 1
+                end
+            end
+        end
+    end
+    return 0
+end

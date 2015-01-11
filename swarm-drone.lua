@@ -83,7 +83,7 @@ local function SwarmDrone()
 	self.ticksPerSecond = 0
 	
 	-- Idle Tick Info
-	self.lastIdleTime = os.clock()
+	self.lastIdleTime = 0
 	
 	-- Behaviors
 	self.behaviors = {}
@@ -159,7 +159,7 @@ local function SwarmDrone()
 		
 		-- FIXME: Determine which behavior we're actually going to run
 		local activeVerb = nil
-		local verbParams
+		local verbParams = nil
 		
 		-- Iterate through all the behaviors and find a valid one
 		for i, behavior in ipairs(self.behaviors) do

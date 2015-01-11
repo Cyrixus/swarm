@@ -1,7 +1,6 @@
 function matchName(itemName)
-    if itemName == "Coal" then return true end
-    if itemName == "Charcoal" then return true end
-    if itemName == "Lava Bucket" then return true end
+    if itemName == "minecraft:coal" then return true end -- Also detects charcoal
+    if itemName == "minecraft:lava_bucket" then return true end
     
     return false
 end

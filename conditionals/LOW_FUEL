@@ -1,6 +1,11 @@
 local lowFuelPercentage = .2 -- consider 20% fuel to be low
 
 function compare(fuelPercentage)
+    if not turtle then
+        print("WARNING: LOW_FUEL executed on a non-turtle; aborting.")
+        return 0
+    end
+
     local maxFuel = turtle.getFuelLimit()
     local currentFuel = turtle.getFuelLevel()
     

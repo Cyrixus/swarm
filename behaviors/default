@@ -1,7 +1,6 @@
 [
     {"c":{"IS_TURTLE":true, "LOW_FUEL":0.2, "CARRYING_RESOURCE":"LOW_COST_FUEL"}, "v":"REFUEL", "t":"LOW_COST_FUEL"},
     {"c":{"IS_TURTLE":true, "LOW_FUEL":0.2}, "v":"GOTO", "t":"home"},
-    {"c":{"IS_TURTLE":true, "INVENTORY_FULL":true, "HAS_LOCATION"}, "v":"DEPOSIT", "t":"DEPOT"},
-    {"c":{"IS_TURTLE":true, "HAS_NEARBY_LOCATION"}, "v":"EXCAVATE", "t":"GT_COPPER"},
-    {"c":{"IS_TURTLE":true}, "v":"FIND", "t":"GT_COPPER"}
+    {"c":{"IS_TURTLE":true, "INVENTORY_FULL":true, "HAS_LOCATION":"DEPOT"}, "v":"DEPOSIT", "t":"DEPOT"},
+    {"c":{"IS_TURTLE":true}, "v":"STRIP_MINE", "t":"VALUABLE_ORE"}
 ]
