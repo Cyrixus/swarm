@@ -16,27 +16,6 @@ local identityDir = "/id/" -- As in the psychological id. This dir contains the 
 local locationsDir = "/id/locs/"
 
 
--- Function for loading libs
-local function loadLib(libLocation)
-	if not os.loadAPI(libLocation) then
-		print("Failed to load library [" .. libLocation .. "], returning false.")
-		return false
-	end
-	return true
-end
-
--- A simple UUID method borrowed from https://gist.github.com/jrus/3197011 and simplified further
--- because we don't REALLY need a whole UUID for anything here
-local random = math.random
-function UUID()
-    local template ='xxxxxxxx'
-    return string.gsub(template, '[xy]', function (c)
-	        local v = (c == 'x') and random(0, 0xf) or random(8, 0xb)
-	        return string.format('%x', v)
-	    end)
-end
-
-
 --[[ Load Libraries ]]--
 -- Load the JSON encoding/decoding library
 -- (Big thanks to Jeffrey Friedl for his library! See notice in lib/JSON)
@@ -48,143 +27,16 @@ local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load lib
 apiLocation = shell.resolve("") .. libDir .. "mobility"
 if not os.loadAPI(apiLocation) then error("Failed to load mobility API @ [" .. apiLocation .. "], aborting.") end
 
+-- Load the swarmlib API
+apiLocation = shell.resolve("") .. libDir .. "swarmlib"
+if not os.loadAPI(apiLocation) then error("Failed to load swarmlib API @ [" .. apiLocation .. "], aborting.") end
+
 -- Load the IDLE behavior, because we're going to be running it frequently
 local idleLoc = shell.resolve("") .. verbDir .. "IDLE"
 if not os.loadAPI(idleLoc) then error("Failed to load IDLE behavior @ [" .. idleLoc .. "], aborting.") end
 
 
---[[ Engine Calls ]]--
-function checkConditional(conditional, params)
-	local conLoc = shell.resolve("") .. conditionalDir .. conditional
-	if loadLib(conLoc) then
-		-- Call the conditional, with the provided params
-		local result = _G[conditional].compare(params)
-		
-		-- Clean up the API when we're done
-		os.unloadAPI(conLoc)
-		
-		if result >= 1 then return true end
-	end
-	return false
-end
 
-function executeVerb(verb, params)
-	local verbLoc = shell.resolve("") .. verbDir .. verb
-	if loadLib(verbLoc) then
-		-- Execute the verb, with the provided params
-		_G[verb].execute(verb)
-		
-		-- Clean up the API when we're done
-		os.unloadAPI(verbLoc)
-	end
-end
-
-function matchResourceByName(resource, name)
-	local resLoc = shell.resolve("") .. resourceDir .. resource
-	if loadLib(resLoc) then
-		-- Perform the match
-		local result = _G[resource].matchName(name)
-		
-		-- Clean up the API when we're done
-		os.unloadAPI(resLoc)
-		if result >= 1 then return true end
-	end
-	return false
-end
-
-function forEachLocation(callback, locID) -- Make sure callback is a function accepting a table as a param
-	local locsFolder = shell.resolve("") .. locationsDir
-	if not fs.exists(locsFolder) then fs.makeDir(locsFolder) end
-	
-	local locs = fs.list(locsFolder)
-	for i, locFile in ipairs(locs) do
-		-- Check to see if this location is in the set we're looking for
-		if locID == nil or string.find(locFile, locID, 1, true) then
-			local locFileName = shell.resolve("") .. locationsDir .. locFile
-		
-			-- Open each non-dir file
-			if not fs.isDir(locFileName) then
-				local f = fs.open(locFileName, "r")
-				if not f then
-					error("Couldn't open file [" .. locFileName .. "]")
-				end
-				
-				-- Decode its contents into a lua table
-				local loc = JSON:decode(f.readAll())
-				f.close()
-				
-				-- Call the callback
-				callback(loc)
-			end
-		end
-	end
-end
-
-function getClosestLocation(locID)
-	-- Build a list of potential locations
-    local targetList = {}
-    forEachLocation(function(loc) targetList[#targetList + 1] = loc end, locID)
-    
-    -- If there's none, finish.
-    if #targetList == 0 then return end
-    
-    -- If there's only one, that's what we're after!
-    local targetLoc = nil
-    if #targetList == 1 then
-        targetLoc = targetList[1]
-    end
-    
-    -- If there's more than one, find the closest
-    if #targetList > 1 then
-        for i, l in ipairs(targetList) do
-            if targetLoc == nil then
-                targetLoc = l
-            else
-                local v = vector.new(l.x, l.y, l.z)
-                local vNew = mobility.getPosition() - v
-                local vOld = mobility.getPosition() - targetLoc
-                
-                if vOld:length() > vNew:length() then
-                    targetLoc = l
-                end
-            end
-        end 
-    end
-    
-    return targetLoc
-end
-
-function createPointLocationXZ(locID, x, z, height, facing, uuid)
-	local locsFolder = shell.resolve("") .. locationsDir
-	
-	-- Validate all of the params, or replace the missing bits with parts of our current location
-	local currentPos = mobility.getPosition()
-	local currentFacing = mobility.getFacing()
-	
-	local loc = {}
-	loc.name = locID
-	loc.x = x or currentPos.x
-	loc.z = z or currentPos.z
-	loc.y = height or currentPos.y
-	loc.facing = facing or currentFacing
-	loc.uuid = uuid or UUID()
-	
-	-- Write the location to a file
-	local f = fs.open(locsFolder .. loc.name .. "-" .. loc.uuid, "w")
-	if not f then
-		error("Couldn't loc file for writing!")
-	end
-	f.write(JSON:encode(loc))
-	f.close()	
-end
-
-function deleteLocation(loc)
-	if not loc.name or not loc.uuid then return end
-	
-	-- Remove the file containing this location from the file system
-	local locsFolder = shell.resolve("") .. locationsDir
-	fs.delete(locsFolder .. loc.name .. "-" .. loc.uuid)
-end
 
 
 --[[ SwarmDrone Class Definition ]]--
