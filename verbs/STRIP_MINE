@@ -43,8 +43,10 @@ function mine(resource)
     
     -- If we've hit bedrock, we're done with this shaft
     if success and block.name == "minecraft:bedrock" then
-        local chunkLoc = swarmlib.getClosestLocation("STRIP_MINE_CHUNK_START")
+        print("STRIP_MINE: Bedrock encountered; abandoning mineshaft.")
         
+        -- Get a reference tot he chunk we're working on
+        local chunkLoc = swarmlib.getClosestLocation("STRIP_MINE_CHUNK_START-"..uuid)
         if not chunkLoc then
             error("STRIP_MINE could not find a CHUNK_START, this shouldn't happen!")
         end
@@ -78,8 +80,10 @@ function mine(resource)
         end
     
     else
+        print("STRIP_MINE: Still room to dig; digging...")
         -- Otherwise, there's still room to dig
-        if mobility.digDown() and mobility.moveDown(1) then
+        mobility.digDown()
+        if mobility.moveDown(1) then
             local success, block = turtle.inspect()
             if success then
                 if swarmlib.matchResourceByName(resource) then
@@ -107,9 +111,11 @@ function execute(resource)
     end
     
     -- Determine if we've already been strip mining and pick up our place
-    local lastMiningLoc = swarmlib.getClosestLocation("STRIP_MINE_LAST_LOC")
+    local lastMiningLoc = swarmlib.getClosestLocation("STRIP_MINE_LAST_LOC-"..uuid)
     if lastMiningLoc then
+        print("STRIP_MINE: Found LAST_LOC, moving to ["..lastMiningLoc.x..", "..lastMiningLoc.y..", "..lastMiningLoc.z.."]")
         if moveTo(lastMiningLoc) then
+            print("STRIP_MINE: Already at LAST_LOC. Mining!")
             mine(resource)
         end
         return
@@ -117,8 +123,9 @@ function execute(resource)
     
     -- If we haven't actively been mining yet, but we've established a chunk
     -- that we want to dig out, go there.
-    local currentChunk = swarmlib.getClosestLocation("STRIP_MINE_CHUNK_START")
+    local currentChunk = swarmlib.getClosestLocation("STRIP_MINE_CHUNK_START-"..uuid)
     if currentChunk then
+        print("STRIP_MINE: CHUNK_START found, moving to ["..currentChunk.x..", "..currentChunk.y..", "..currentChunk.z.."]")
         if moveTo(currentChunk) then
             mobility.turn("north")
             mobility.digDown()
@@ -134,6 +141,7 @@ function execute(resource)
     local nextChunkStartX = pos.x + (16 - math.fmod(pos.x + 16, 16))
     local nextChunkStartZ = pos.z - math.fmod(pos.z, 16)
     local nextChunkStartY = pos.y
+    print("STRIP_MINE: Defining new CHUNK_START at ["..nextChunkStartX..", "..nextChunkStartY..", "..nextChunkStartZ.."]")
     
     swarmlib.createPointLocationXZ("STRIP_MINE_CHUNK_START", nextChunkStartX, nextChunkStartZ, nextChunkStartY, "north", uuid)
 end
