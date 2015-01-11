@@ -25,11 +25,11 @@ function moveTo(loc)
     local dist = mobility.getPosition() - vTarget
     if dist:length() <= 0 then
         -- We're there, make sure we're facing the right way
-        mobility.turn(lastMiningLoc.facing)
+        mobility.turn(loc.facing)
         return true
     else
         -- We're not there, so go there
-        if mobility.moveTowardVec(loc) then
+        if mobility.digTowardVec(loc) then
             return false
         end
     end
