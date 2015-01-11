@@ -196,6 +196,7 @@ local function SwarmDrone()
 	local function doIDLE()
 		IDLE.execute(self)
 		self.lastIdleTime = os.clock()
+		print("IDLE called self.lastIdleTime set to [" .. self.lastIdleTime .. "]")
 	end
 
 	--[[ Engine Tick Event ]]--
@@ -209,9 +210,11 @@ local function SwarmDrone()
 		
 		-- Force an IDLE tick if we're approaching the 10 second limit between os.pullEvent() calls
 		local currentTime = os.clock()
-		if currentTime - self.lastIdleTime > 5.0 then -- Every 5.0 seconds
+		if currentTime - self.lastIdleTime > 3.0 then -- Every 5.0 seconds
 			doIDLE()
 			return true
+		else
+			print("Not time for IDLE yet, [".. currentTime .. "<" .. self.lastIdleTime + 3.0 .."]")
 		end
 		
 		-- FIXME: Determine which behavior we're actually going to run
