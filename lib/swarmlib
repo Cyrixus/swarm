@@ -22,6 +22,8 @@ local apiLocation = "" .. libDir .. "JSON"
 if not os.loadAPI(apiLocation) then error("Failed to load JSON API @ [" .. apiLocation .. "], aborting.") end
 local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load libs normally was too hard.
 
+if not os.loadAPI("string") then error("Failed to load string lib.") end
+
 
 --[[ Relative Directory ]]--
 -- Because we can't have nice things, like shell.resolve() from library code.
@@ -92,6 +94,14 @@ end
 function forEachLocation(callback, locID) -- Make sure callback is a function accepting a table as a param
     local locsFolder = relativeDir .. locationsDir
     if not fs.exists(locsFolder) then fs.makeDir(locsFolder) end
+    
+    if type(locID) == table then
+        for k,v in ipairs(locID) do
+            print(k, " : ", v)
+        end
+    else
+        print(locID)
+    end
     
     local locs = fs.list(locsFolder)
     for i, locFile in ipairs(locs) do
