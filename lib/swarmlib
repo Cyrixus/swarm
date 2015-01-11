@@ -16,9 +16,12 @@ conditionalDir = "/conditionals/"
 identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
 locationsDir = "/id/locs/"
 
+local relativeDir = ""
+function setRelativeDir(dir) relativeDir = dir end
+
 --[[ Helper Methods ]]--
 -- Function for loading libs
-local function loadLib(libLocation)
+function loadLib(libLocation)
     if not os.loadAPI(libLocation) then
         print("Failed to load library [" .. libLocation .. "], returning false.")
         return false
@@ -40,7 +43,7 @@ end
 
 --[[ Engine Calls ]]--
 function checkConditional(conditional, params)
-    local conLoc = shell.resolve("") .. conditionalDir .. conditional
+    local conLoc = relativeDir .. conditionalDir .. conditional
     if loadLib(conLoc) then
         -- Call the conditional, with the provided params
         local result = _G[conditional].compare(params)
@@ -54,7 +57,7 @@ function checkConditional(conditional, params)
 end
 
 function executeVerb(verb, params)
-    local verbLoc = shell.resolve("") .. verbDir .. verb
+    local verbLoc = relativeDir .. verbDir .. verb
     if loadLib(verbLoc) then
         -- Execute the verb, with the provided params
         _G[verb].execute(verb)
@@ -65,7 +68,7 @@ function executeVerb(verb, params)
 end
 
 function matchResourceByName(resource, name)
-    local resLoc = shell.resolve("") .. resourceDir .. resource
+    local resLoc = relativeDir .. resourceDir .. resource
     if loadLib(resLoc) then
         -- Perform the match
         local result = _G[resource].matchName(name)
@@ -78,14 +81,14 @@ function matchResourceByName(resource, name)
 end
 
 function forEachLocation(callback, locID) -- Make sure callback is a function accepting a table as a param
-    local locsFolder = shell.resolve("") .. locationsDir
+    local locsFolder = relativeDir .. locationsDir
     if not fs.exists(locsFolder) then fs.makeDir(locsFolder) end
     
     local locs = fs.list(locsFolder)
     for i, locFile in ipairs(locs) do
         -- Check to see if this location is in the set we're looking for
         if locID == nil or string.find(locFile, locID, 1, true) then
-            local locFileName = shell.resolve("") .. locationsDir .. locFile
+            local locFileName = relativeDir .. locationsDir .. locFile
         
             -- Open each non-dir file
             if not fs.isDir(locFileName) then
@@ -140,7 +143,7 @@ function getClosestLocation(locID)
 end
 
 function createPointLocationXZ(locID, x, z, height, facing, uuid)
-    local locsFolder = shell.resolve("") .. locationsDir
+    local locsFolder = relativeDir .. locationsDir
     
     -- Validate all of the params, or replace the missing bits with parts of our current location
     local currentPos = mobility.getPosition()
@@ -167,6 +170,6 @@ function deleteLocation(loc)
     if not loc.name or not loc.uuid then return end
     
     -- Remove the file containing this location from the file system
-    local locsFolder = shell.resolve("") .. locationsDir
+    local locsFolder = relativeDir .. locationsDir
     fs.delete(locsFolder .. loc.name .. "-" .. loc.uuid)
 end

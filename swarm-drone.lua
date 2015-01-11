@@ -21,6 +21,7 @@ if not os.loadAPI(apiLocation) then error("Failed to load mobility API @ [" .. a
 -- Load the swarmlib API
 apiLocation = shell.resolve("") .. libDir .. "swarmlib"
 if not os.loadAPI(apiLocation) then error("Failed to load swarmlib API @ [" .. apiLocation .. "], aborting.") end
+swarmlib.setRelativeDir(shell.resolve(""))
 
 -- Load the IDLE behavior, because we're going to be running it frequently
 local idleLoc = shell.resolve("") .. swarmlib.verbDir .. "IDLE"
