@@ -94,6 +94,8 @@ end
 
 function forEachLocation(callback, locID) -- Make sure callback is a function accepting a table as a param
 	local locsFolder = shell.resolve("") .. locationsDir
+	if not fs.exists(locsFolder) then fs.makeDir(locsFolder) end
+	
 	local locs = fs.list(locsFolder)
 	for i, locFile in ipairs(locs) do
 		-- Check to see if this location is in the set we're looking for
@@ -212,6 +214,13 @@ local function SwarmDrone()
 			Step 2: Collect data about self and immediate surroundings
 			Step 3: Announce self to swarm-net, if possible
 		]]--
+		
+		-- Create the id and id/locs folders if they don't already exist
+		local idDir = shell.resolve("") .. identityDir
+		if not fs.exists(idDir) then fs.makeDir(idDir) end
+		idDir = shell.resolve("") .. locationsDir
+		if not fs.exists(idDir) then fs.makeDir(idDir) end
+		
 		
 		-- Reset the behavior array, just in case
 		self.behaviors = {}
