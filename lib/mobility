@@ -262,9 +262,9 @@ function moveTowardVec(target)
 end
 
 function moveTowardXZ(x, z, height)
-    x = x or 0
-    z = z or 0
-    height = height or 0
+    x = x or currentPosition.x
+    z = z or currentPosition.z
+    height = height or currentPosition.y
     return moveTowardVec(vector.new(x, z, height))
 end
 
@@ -379,8 +379,8 @@ function digTowardVec(target)
 end
 
 function digTowardXZ(x, z, height)
-    x = x or 0
-    z = z or 0
-    height = height or 0
+    x = x or currentPosition.x
+    z = z or currentPosition.z
+    height = height or currentPosition.y
     return digTowardVec(vector.new(x, z, height))
 end

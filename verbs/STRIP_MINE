@@ -1,0 +1,139 @@
+function loadUUID()
+    local uuidFile = "" .. swarmlib.identityDir .. "uuid"
+    if fs.exists(uuidFile) and not fs.isDir(uuidFile) then
+        local f = fs.open(uuidFile, "r")
+        if not f then
+            error("uuid file exists, but couldn't be opened!")
+        end
+        local uuid = f.readLine()
+        f.close()
+        if string.len(uuid) == 8 then
+            return uuid
+        else
+            error("STRIP_MINE: Loaded uuid was invalid, aborting!")
+        end
+    end
+end
+
+local uuid = loadUUID()
+
+
+function moveTo(loc)
+    -- We've already been mining, determine if we're at the last place we were
+    -- Check range and stop if we're close enough
+    local vTarget = vector.new(loc.x, loc.y, loc.z)
+    local dist = mobility.getPosition() - vTarget
+    if dist:length() <= 0 then
+        -- We're there, make sure we're facing the right way
+        mobility.turn(lastMiningLoc.facing)
+        return true
+    else
+        -- We're not there, so go there
+        if mobility.moveTowardVec(loc) then
+            return false
+        end
+    end
+    return false
+end
+
+
+function mine(resource)
+    local success, block = turtle.inspectDown()
+    local pos = mobility.getPosition()
+    
+    -- If we've hit bedrock, we're done with this shaft
+    if success and block.name == "minecraft:bedrock" then
+        local chunkLoc = swarmlib.getClosestLocation("STRIP_MINE_CHUNK_START")
+        
+        if not chunkLoc then
+            error("STRIP_MINE could not find a CHUNK_START, this shouldn't happen!")
+        end
+        
+        -- Go all the way back up
+        if mobility.moveUp(chunkLoc.y - pos.y) then
+            -- drop something below us to block the hole
+            for i = 1, 16, 1 do
+                local success, item = turtle.getItemDetail(i)
+                if success then
+                    if not item.name == "minecraft:gravel" and not item.name == "minecraft:sand"
+                    if swarmlib.matchResourceByName("LOW_VALUE_BLOCK", item.name) then
+                        if turtle.select(i) then turtle.place() end
+                    end
+                end
+            end
+            
+            -- Then go to our next location
+            local coordx = chunkLoc.x
+            local coordz = pos.z
+            if math.fmod(pos.z) - 2 < 0 then coordz = coordz + 1 end
+            coordx = coordx + math.fmod(pos.z - 2)
+            
+            while mobility.digTowardXZ(coordx, coordz) do
+            end
+            
+            mobility.turn("north")
+            mobility.digDown()
+            mobility.moveDown(1)
+        end
+    
+    else
+        -- Otherwise, there's still room to dig
+        if mobility.digDown() and mobility.moveDown(1) then
+            local success, block = turtle.inspect()
+            if success then
+                if swarmlib.matchResourceByName(resource) then
+                    mobility.dig()
+                end
+            end
+        end
+    end
+    
+    -- Then update our last location
+    pos = mobility.getPosition()
+    swarmlib.createPointLocationXZ("STRIP_MINE_LAST_LOC", pos.x, pos.z, pos.y, pos.facing, uuid)
+end
+
+
+function execute(resource)
+    if not turtle then
+        print("WARNING: STRIP_MINE executed on a non-turtle; aborting.")
+        return
+    end
+    
+    if not mobility then
+        print("WARNING: STRIP_MINE requires mobility API; aborting.")
+        return
+    end
+    
+    local pos = mobility.getPosition()
+    
+    -- Determine if we've already been strip mining and pick up our place
+    local lastMiningLoc = swarmlib.getClosestLocation("STRIP_MINE_LAST_LOC")
+    if lastMiningLoc then
+        if moveTo(loc) then
+            mine(resource)
+        end
+        return
+    end
+    
+    -- If we haven't actively been mining yet, but we've established a chunk
+    -- that we want to dig out, go there.
+    local currentChunk = swarmlib.getClosestLocation("STRIP_MINE_CHUNK_START")
+    if currentChunk then
+        if moveTo(loc) then
+            mobility.turn("north")
+            mobility.digDown()
+            mobility.moveDown(1)
+            local pos = mobility.getPosition()
+            swarmlib.createPointLocationXZ("STRIP_MINE_LAST_LOC", pos.x, pos.z, pos.y, pos.facing, uuid)
+        end
+        return
+    end
+    
+    -- Find the next chunk we're going to mine out
+    local nextChunkStartX = pos.x + (16 - math.fmod(pos.x + 16))
+    local nextChunkStartZ = pos.z - math.fmod(pos.z)
+    local nextChunkStartY = currentChunk.y or pos.y
+    
+    swarmlib.createPointLocationXZ("STRIP_MINE_CHUNK_START", nextChunkStartX, nextChunkStartZ, nextChunkStartY, "north", uuid)
+end

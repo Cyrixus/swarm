@@ -1,0 +1,14 @@
+function matchName(itemName)
+    if itemName == "minecraft:dirt" then return true end
+    if itemName == "minecraft:gravel" then return true end
+    if itemName == "minecraft:stone" then return true end
+    if itemName == "minecraft:cobblestone" then return true end
+    if itemName == "minecraft:sand" then return true end
+    if itemName == "IC2:blockBasalt" then return true end
+    if itemName == "bluepower:basalt" then return true end
+    if itemName == "bluepower:basalt_cobble" then return true end
+    if itemName == "bluepower:marble" then return true end
+    if itemName == "Railcraft:tile.railcraft.cube" then return true end -- Quarried Stone (metadata=7)
+    
+    return false
+end
