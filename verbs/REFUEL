@@ -35,5 +35,5 @@ function execute(validFuel)
         -- Check the fuel level again, to see where we are.
         currentFuel = turtle.getFuelLevel()
     end
-    print("REFUEL: Finished fueling at [" currentFuel .. "/" .. maxFuel .. "]")
+    print("REFUEL: Finished fueling at [" .. currentFuel .. "/" .. maxFuel .. "]")
 end
