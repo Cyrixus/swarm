@@ -31,9 +31,9 @@ local random = math.random
 function UUID()
     local template ='xxxxxxxx'
     return string.gsub(template, '[xy]', function (c)
-        local v = (c == 'x') and random(0, 0xf) or random(8, 0xb)
-        return string.format('%x', v)
-    end
+	        local v = (c == 'x') and random(0, 0xf) or random(8, 0xb)
+	        return string.format('%x', v)
+	    end)
 end
 
 
@@ -46,7 +46,7 @@ local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load lib
 
 -- Load the mobility turtle API
 apiLocation = shell.resolve("") .. libDir .. "mobility"
-if not os.loadAPI(apiLocation) then error("Failed to load mobility API @ [" .. apiLocation .. "], aborting." end)
+if not os.loadAPI(apiLocation) then error("Failed to load mobility API @ [" .. apiLocation .. "], aborting.") end
 
 -- Load the IDLE behavior, because we're going to be running it frequently
 local idleLoc = shell.resolve("") .. verbDir .. "IDLE"
@@ -158,14 +158,14 @@ function createPointLocationXZ(locID, x, z, height, facing, uuid)
 	-- Validate all of the params, or replace the missing bits with parts of our current location
 	local currentPos = mobility.getPosition()
 	local currentFacing = mobility.getFacing()
-	x = x or currentPos.x
-	z = z or currentPos.z
-	height = height or currentPos.y
-	facing = facing or currentFacing
-	uuid = uuid or UUID()
 	
-	-- Build the location table
-	local loc = { "name" = locID, "uuid" = uuid, "x" = x, "y" = height, "z" = z, "facing" = facing }
+	local loc = {}
+	loc.name = locID
+	loc.x = x or currentPos.x
+	loc.z = z or currentPos.z
+	loc.y = height or currentPos.y
+	loc.facing = facing or currentFacing
+	loc.uuid = uuid or UUID()
 	
 	-- Write the location to a file
 	local f = fs.open(locsFolder .. loc.name .. "-" .. loc.uuid, "w")
