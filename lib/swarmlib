@@ -85,9 +85,8 @@ function matchResourceByName(resource, name)
         
         -- Clean up the API when we're done
         os.unloadAPI(resLoc)
-        if result >= 1 then return true end
+        return result
     end
-    return false
 end
 
 function forEachLocation(callback, locID) -- Make sure callback is a function accepting a table as a param
