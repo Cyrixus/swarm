@@ -1,0 +1,12 @@
+function compare()
+    if not turtle then
+        print("WARNING: CARRYING_RESOURCE executed on a non-turtle; aborting.")
+        return
+    end
+    
+    local fullSlots = 0
+    for i = 1, 16, 1 do
+        if turtle.getItemCount(i) > 0 then fullSlots = fullSlots + 1 end
+    end
+    return fullSlots / 15 -- FIXME: Leave a spot free, but if we ever change to fuzzy logic this should probably be 16 again
+end

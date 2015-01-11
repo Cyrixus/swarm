@@ -1,11 +1,6 @@
-function execute(locID, distance)
-    if not turtle then
-        print("WARNING: GOTO executed on a non-turtle; aborting.")
-        return
-    end
-    
+function compare(locID, distance)
     if not mobility then
-        print("WARNING: GOTO requires mobility API; aborting.")
+        print("WARNING: AT_LOCATION requires mobility API; aborting.")
         return
     end
     
@@ -18,9 +13,8 @@ function execute(locID, distance)
     local vTarget = vector.new(targetLoc.x, targetLoc.y, targetLoc.z)
     local dist = mobility.getPosition() - vTarget
     if dist:length() <= distance then
-        return
+        return 1
     end
     
-    -- Move towards it (use DIGTO instead, if you want to break everything along the way)
-    mobility.moveTowardXZ(targetLoc.x, targetLoc.z, targetLoc.y)
+    return 100 - dist:length() / 100
 end

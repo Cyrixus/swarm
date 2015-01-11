@@ -1,0 +1,8 @@
+function matchName(itemName)
+    if itemName == "minecraft:chest" then return true end -- Also detects charcoal
+    if itemName == "IronChest:BlockIronChest" then return true end
+    if itemName == "EE3:alchemicalChest" then return true end
+    if itemName == "EnderStorage:enderChest" then return true end
+    
+    return false
+end

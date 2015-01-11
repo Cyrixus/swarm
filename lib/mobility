@@ -5,22 +5,22 @@
 ]]--
 
 --[[ Facing Vecs ]]--
-local facings = { 
+facings = { 
     "north" = vector.new(0, 0, -1),  -- Negative Z
     "east" = vector.new(1, 0, 0),    -- Positive X
     "south" = vector.new(0, 0, 1),   -- Positive Z
     "west" = vector.new(-1, 0, 0)    -- Negative X
 }
     
-local intFacings = {
+intFacings = {
     0 = "north",
     1 = "east",
     2 = "south",
     3 = "west"
 }
 
-local up = vector.new(0, 1, 0)
-local down = vector.new(0, -1, 0)
+up = vector.new(0, 1, 0)
+down = vector.new(0, -1, 0)
 
 
 --[[ Current State ]]--
@@ -184,6 +184,25 @@ function turn(facing)
         end
     end
     return true
+end
+
+function turnToFaceVec(target)
+    local vecToTarget = target - currentPosition
+    if math.abs(vecToTarget.z) > math.abs(vecToTarget.x) then
+        -- Should face along north-south
+        if vecToTarget.z <= 0 then
+            turn("north")
+        else
+            turn("south")
+        end
+    else
+        -- Should face along east-west
+        if vecToTarget.x > 0 then
+            turn("east")
+        else
+            turn("west")
+        end
+    end
 end
 
 --[[ Move Towards ]]--

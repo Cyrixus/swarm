@@ -118,6 +118,40 @@ function forEachLocation(callback, locID) -- Make sure callback is a function ac
 	end
 end
 
+function getClosestLocation(locID)
+	-- Build a list of potential locations
+    local targetList = {}
+    forEachLocation(function(loc) targetList[#targetList + 1] = loc end, locID)
+    
+    -- If there's none, finish.
+    if #targetList == 0 then return end
+    
+    -- If there's only one, that's what we're after!
+    local targetLoc = nil
+    if #targetList == 1 then
+        targetLoc = targetList[1]
+    end
+    
+    -- If there's more than one, find the closest
+    if #targetList > 1 then
+        for i, l in ipairs(targetList) do
+            if targetLoc == nil then
+                targetLoc = l
+            else
+                local v = vector.new(l.x, l.y, l.z)
+                local vNew = mobility.getPosition() - v
+                local vOld = mobility.getPosition() - targetLoc
+                
+                if vOld:length() > vNew:length() then
+                    targetLoc = l
+                end
+            end
+        end 
+    end
+    
+    return targetLoc
+end
+
 function createPointLocationXZ(locID, x, z, height, facing, uuid)
 	local locsFolder = shell.resolve("") .. locationsDir
 	
@@ -140,6 +174,14 @@ function createPointLocationXZ(locID, x, z, height, facing, uuid)
 	end
 	f.write(JSON:encode(loc))
 	f.close()	
+end
+
+function deleteLocation(loc)
+	if not loc.name or not loc.uuid then return end
+	
+	-- Remove the file containing this location from the file system
+	local locsFolder = shell.resolve("") .. locationsDir
+	fs.delete(locsFolder .. loc.name .. "-" .. loc.uuid)
 end
 
 

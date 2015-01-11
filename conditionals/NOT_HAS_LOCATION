@@ -1,0 +1,3 @@
+function compare(locID)
+    return not checkConditional("HAS_LOCATION", locID)
+end

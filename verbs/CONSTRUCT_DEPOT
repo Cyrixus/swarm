@@ -1,0 +1,31 @@
+function execute(resource)
+    if not turtle then
+        print("WARNING: GOTO executed on a non-turtle; aborting.")
+        return
+    end
+    
+    if not mobility then
+        print("WARNING: GOTO requires mobility API; aborting.")
+        return
+    end
+    
+    if not resource then return end
+    
+    -- For the sake of simplicity we're going to construct the depot 1 square NE of wherever we start
+    if not mobility.turn("east") then return end
+    if not mobility.moveForward(1) then return end
+    if not mobility.turn("north") then return end
+    
+    -- Place the resource that will be our new DEPOT. Should be some kind of inventory.
+    for i = 1, 16, 1 do
+        local success, item = turtle.getItemDetail(i)
+        if success then 
+            if matchResourceByName(resource, item.name) then
+                if turtle.select(i) and turtle.place() then
+                    local pos = mobility.getPosition() + mobility.facings.north
+                    createPointLocationXZ("DEPOT", pos.x, pos.z, pos.y)
+                end
+            end
+        end
+    end
+end

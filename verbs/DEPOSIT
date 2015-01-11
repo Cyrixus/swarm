@@ -1,0 +1,33 @@
+function execute(resource)
+    if not turtle then
+        print("WARNING: GOTO executed on a non-turtle; aborting.")
+        return
+    end
+    
+    if not mobility then
+        print("WARNING: GOTO requires mobility API; aborting.")
+        return
+    end
+    
+    if not resource then return end
+    
+    local targetLoc = getClosestLocation("DEPOT")
+    if not targetLoc then return end
+    
+    -- Face the Depot
+    mobility.turnToFaceVec(vector.new(targetLoc.x, targetLoc.y, targetLoc.z))
+    
+    -- Deposit whatever matches our target
+    for i = 1, 16, 1 do
+        local success, item = turtle.getItemDetail(i)
+        if success then 
+            if matchResourceByName(resource, item.name) then
+                if not turtle.select(i) or not turtle.drop() then
+                    executeVerb("CONSTRUCT_DEPOT")
+                    deleteLocation(targetLoc)
+                    return
+                end
+            end
+        end
+    end
+end
