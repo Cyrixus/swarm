@@ -16,8 +16,18 @@ conditionalDir = "/conditionals/"
 identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
 locationsDir = "/id/locs/"
 
+
+--[[ Required Libs ]]--
+local apiLocation = shell.resolve("") .. libDir .. "JSON"
+if not os.loadAPI(apiLocation) then error("Failed to load JSON API @ [" .. apiLocation .. "], aborting.") end
+local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load libs normally was too hard.
+
+
+--[[ Relative Directory ]]--
+-- Because we can't have nice things, like shell.resolve() from library code.
 local relativeDir = ""
 function setRelativeDir(dir) relativeDir = dir end
+
 
 --[[ Helper Methods ]]--
 -- Function for loading libs
@@ -173,3 +183,6 @@ function deleteLocation(loc)
     local locsFolder = relativeDir .. locationsDir
     fs.delete(locsFolder .. loc.name .. "-" .. loc.uuid)
 end
+
+--[[ Unload Libs ]]--
+os.unloadAPI(shell.resolve("") .. libDir .. "JSON")
