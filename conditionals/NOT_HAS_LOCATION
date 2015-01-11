@@ -1,3 +1,3 @@
 function compare(locID)
-    return not swarmlib.checkConditional("HAS_LOCATION", locID)
+    return 1 - swarmlib.checkConditional("HAS_LOCATION", locID)
 end
