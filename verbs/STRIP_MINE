@@ -106,8 +106,6 @@ function execute(resource)
         return
     end
     
-    local pos = mobility.getPosition()
-    
     -- Determine if we've already been strip mining and pick up our place
     local lastMiningLoc = swarmlib.getClosestLocation("STRIP_MINE_LAST_LOC")
     if lastMiningLoc then
@@ -132,8 +130,9 @@ function execute(resource)
     end
     
     -- Find the next chunk we're going to mine out
-    local nextChunkStartX = pos.x + (16 - math.fmod(pos.x + 16))
-    local nextChunkStartZ = pos.z - math.fmod(pos.z)
+    local pos = mobility.getPosition()
+    local nextChunkStartX = pos.x + (16 - math.fmod(pos.x + 16, 16))
+    local nextChunkStartZ = pos.z - math.fmod(pos.z, 16)
     local nextChunkStartY = currentChunk.y or pos.y
     
     swarmlib.createPointLocationXZ("STRIP_MINE_CHUNK_START", nextChunkStartX, nextChunkStartZ, nextChunkStartY, "north", uuid)
