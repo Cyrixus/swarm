@@ -151,7 +151,7 @@ function turnRight(count)
     while count do
         if turtle.turnRight() then
             count = count - 1
-            currentFacing = math.fmod(getIntFacing(currentFacing) + 1)
+            currentFacing = math.fmod(getFacingInt(currentFacing) + 1, 4)
         else
             return false
         end
@@ -164,7 +164,7 @@ function turnLeft(count)
     while count do
         if turtle.turnLeft() then
             count = count - 1
-            currentFacing = math.fmod(getIntFacing(currentFacing) - 1)
+            currentFacing = math.fmod(getFacingInt(currentFacing) - 1, 4)
         else
             return false
         end
@@ -173,9 +173,9 @@ function turnLeft(count)
 end
 
 function turn(facing)
-    getIntFacing(facing) -- So long as this doesn't throw an error, our target facing should be valid.
+    getFacingInt(facing) -- So long as this doesn't throw an error, our target facing should be valid.
     while currentFacing ~= facing do
-        if math.fmod(getIntFacing(currentFacing) - 1) == getIntFacing(facing) then
+        if math.fmod(getFacingInt(currentFacing) - 1, 4) == getFacingInt(facing) then
             if not turnLeft(1) then return false end
         else
             if not turnRight(1) then return false end
