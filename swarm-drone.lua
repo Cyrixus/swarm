@@ -13,7 +13,7 @@ local resourceDir = "/resources/"
 local conditionalDir = "/conditionals/"
 -- Directories for information specific to this drone.
 local identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
-local locationsDir = "/id/locs"
+local locationsDir = "/id/locs/"
 
 
 -- Function for loading libs
