@@ -18,7 +18,7 @@ locationsDir = "/id/locs/"
 
 
 --[[ Required Libs ]]--
-local apiLocation = shell.resolve("") .. libDir .. "JSON"
+local apiLocation = relativeDir .. libDir .. "JSON"
 if not os.loadAPI(apiLocation) then error("Failed to load JSON API @ [" .. apiLocation .. "], aborting.") end
 local JSON = JSON.OBJDEF:new() -- Because, you know, CC just letting us load libs normally was too hard.
 
