@@ -65,7 +65,7 @@ function checkConditional(conditional, params)
         
         -- Clean up the API when we're done
         os.unloadAPI(conLoc)
-        if not result then error("WARNING: Condtitional [" + conditional + "] returned nil result!")
+        if not result then error("WARNING: Condtitional [" + conditional + "] returned nil result!") end
         if result >= 1 then return true end
     end
     return false
