@@ -56,7 +56,7 @@ function checkConditional(conditional, params)
     local conLoc = relativeDir .. conditionalDir .. conditional
     if loadLib(conLoc) then
         -- Call the conditional, with the provided params
-        local result = _G[conditional].compare(params)
+        local result = _G[conditional].compare(unpack(params))
         
         -- Clean up the API when we're done
         os.unloadAPI(conLoc)
@@ -70,7 +70,7 @@ function executeVerb(verb, params)
     local verbLoc = relativeDir .. verbDir .. verb
     if loadLib(verbLoc) then
         -- Execute the verb, with the provided params
-        _G[verb].execute(params)
+        _G[verb].execute(unpack(params))
         
         -- Clean up the API when we're done
         os.unloadAPI(verbLoc)
@@ -93,7 +93,7 @@ function forEachLocation(callback, locID) -- Make sure callback is a function ac
     local locsFolder = relativeDir .. locationsDir
     if not fs.exists(locsFolder) then fs.makeDir(locsFolder) end
     
-    if type(locID) == table then
+    if type(locID) == "table" then
         for k,v in ipairs(locID) do
             print(k, " : ", v)
         end
