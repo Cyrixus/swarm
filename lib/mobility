@@ -5,19 +5,17 @@
 ]]--
 
 --[[ Facing Vecs ]]--
-facings = { 
-    "north" = vector.new(0, 0, -1),  -- Negative Z
-    "east" = vector.new(1, 0, 0),    -- Positive X
-    "south" = vector.new(0, 0, 1),   -- Positive Z
-    "west" = vector.new(-1, 0, 0)    -- Negative X
-}
+facings = {}
+facings.north = vector.new(0, 0, -1)  -- Negative Z
+facings.east = vector.new(1, 0, 0)    -- Positive X
+facings.south = vector.new(0, 0, 1)   -- Positive Z
+facings.west = vector.new(-1, 0, 0)    -- Negative X
     
-intFacings = {
-    0 = "north",
-    1 = "east",
-    2 = "south",
-    3 = "west"
-}
+intFacings = {}
+intFacings[0] = "north"
+intFacings[1] = "east"
+intFacings[2] = "south"
+intFacings[3] = "west"
 
 up = vector.new(0, 1, 0)
 down = vector.new(0, -1, 0)
