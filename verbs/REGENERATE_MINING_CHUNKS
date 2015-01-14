@@ -18,6 +18,9 @@ function execute(forbiddenLocIDs)
     local superRegNorth = pos.z - 128
     local superRegSouth = pos.z + 128
     
+    -- Remove all previous mining chunks
+    swarmlib.forEachLocation(function(loc) swarmlib.deleteLocation(loc) end, "MINING_CHUNK")
+    
     -- Concatenate a table of all forbidden locIDs
     local forbiddenIDs = {}
     for i, id in ipairs(DEFAULT_FORBIDDEN_IDS) do
@@ -54,6 +57,9 @@ function execute(forbiddenLocIDs)
                         if mobility.isVecInRegion(vector.new(loc.x, loc.y, loc.z), chunk.v1, chunk.v2) then
                             chunk.forbidden = true
                             swarmlib.createRegionLocation("FORBIDDEN_MINING_CHUNK", chunk.v1, chunk.v2, nil, {forbidden = true, done = true})
+                            print("NOTICE: Forbidding chunk [" .. chunk.v1.x .. ", " .. chunk.v2.x .. " : " .. chunk.v1.z .. ", " .. chunk.v2.z
+                                .. "] due to forbidden location [" .. loc.name .. "-" .. loc.uuid .. "]")
+                            chunks.k = nil
                         end
                     end
                 end
