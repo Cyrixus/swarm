@@ -177,9 +177,9 @@ local function SwarmDrone()
 		
 		-- Save the starting position with the identifier HOME, unless one already exists
 		print ("Creating home location...")
-		local home = swarmlib.getClosestLocation("HOME")
+		local home = swarmlib.getClosestLocation("HOME-"..self.uuid)
 		if not home then
-			swarmlib.createPointLocationXZ("HOME")
+			swarmlib.createPointLocation("HOME", nil, nil, nil, self.uuid)
 		end
 		
 		-- Attempt to determine facing

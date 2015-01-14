@@ -125,7 +125,7 @@ function distToRegion(vec, regVec1, regVec2)
     
     -- Sum z Distance
     local minZ = math.min(regVec1.z, regVec2.z)
-    local maxZ = math.maz(regVec1.z, regVec2.z)
+    local maxZ = math.max(regVec1.z, regVec2.z)
     if vec.z < minZ then dist = dist + ((minZ - vec.z) * (minZ - vec.z)) end
     if vec.z > maxZ then dist = dist + ((vec.z - maxZ) * (vec.z - maxZ)) end
     
