@@ -161,7 +161,10 @@ function getClosestLocation(locID)
             if targetLoc == nil then
                 targetLoc = l
             else
-                if distToLocation(pos, targetLoc) < distToLocation(pos, l) then
+                local dist = distToLocation(pos, l)
+                if dist = 0 then return l end
+                
+                if distToLocation(pos, targetLoc) > dist then
                     targetLoc = l
                 end
             end
