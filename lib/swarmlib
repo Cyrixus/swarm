@@ -131,10 +131,10 @@ function forEachLocation(callback, locID) -- Make sure callback is a function ac
 end
 
 function distToLocation(vec, loc)
-    if loc.type = pointType then
+    if loc.type == pointType then
         local distVec = vector.new(loc.x - vec.x, loc.y - vec.y, loc.z - vec.z)
         return distVec:length()
-    elseif loc.type = regionType then
+    elseif loc.type == regionType then
         return mobility.distToRegion(vec, loc.v1, loc.v2)
     end
     return nil 
