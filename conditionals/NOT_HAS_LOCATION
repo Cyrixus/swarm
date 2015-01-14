@@ -1,4 +1,5 @@
 function compare(locID)
-    if swarmlib.checkConditional("HAS_LOCATION", locID) return 1 end
+    local result = swarmlib.checkConditional("HAS_LOCATION", locID)
+    if not result then return 1 end
     return 0
 end

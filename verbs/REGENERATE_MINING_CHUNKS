@@ -47,11 +47,11 @@ function execute(forbiddenLocIDs)
     -- Iterate through the list of forbidden locs
     for i, id in ipairs(forbiddenIDs) do
         swarmlib.forEachLocation(function(loc)
-                if loc.type = swarmlib.pointType then
+                if loc.type == swarmlib.pointType then
                     -- For each chunk
                     for k, chunk in ipairs(chunks) do
                         -- If the loc is in this chunk
-                        if isVecInRegion(vector.new(loc.x, loc.y, loc.z), chunk.v1, chunk.v2) then
+                        if mobility.isVecInRegion(vector.new(loc.x, loc.y, loc.z), chunk.v1, chunk.v2) then
                             chunk.forbidden = true
                             swarmlib.createRegionLocation("FORBIDDEN_MINING_CHUNK", chunk.v1, chunk.v2, nil, {forbidden = true, done = true})
                         end

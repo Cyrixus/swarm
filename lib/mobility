@@ -102,7 +102,7 @@ function chunkContainingVec(vec)
     local westEdge = vec.x - math.fmod(vec.x, CHUNK_SIZE)
     local eastEdge = westEdge + CHUNK_SIZE - 1
     local northEdge = vec.x - math.fmod(vec.z, CHUNK_SIZE)
-    local southEdge = southEdge + CHUNK_SIZE - 1
+    local southEdge = northEdge + CHUNK_SIZE - 1
     return vector.new(westEdge, TOP, northEdge), vector.new(eastEdge, BOTTOM, southEdge)
 end
 
