@@ -5,5 +5,5 @@ function execute()
     
     -- TODO: Handle different kinds of messages here, such as incoming swarmnet events.
     
-    print("IDLE: Handled event [" .. event .. "]")
+    -- print("IDLE: Handled event [" .. event .. "]")
 end

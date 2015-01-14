@@ -233,7 +233,7 @@ local function SwarmDrone()
 		]]--
 		
 		-- Save our current position
-   		swarmlib.createPointLocationXZ("LAST_POS", nil, nil, nil, nil, drone.getUUID())
+   		swarmlib.createPointLocationXZ("LAST_POS", nil, nil, nil, nil, self.uuid)
 		
 		-- Force an IDLE tick if we're approaching the 10 second limit between os.pullEvent() calls
 		local currentTime = os.clock()
