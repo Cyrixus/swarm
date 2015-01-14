@@ -176,10 +176,9 @@ local function SwarmDrone()
 		swarmlib.executeVerb("CHECK_SURROUNDINGS")
 		
 		-- Save the starting position with the identifier HOME, unless one already exists
-		local doesHomeExist = false
-		swarmlib.forEachLocation(function() doesHomeExist = true end, "HOME")
-		
-		if not doesHomeExist then
+		print ("Creating home location...")
+		local home = swarmlib.getClosestLocation("HOME")
+		if not home then
 			swarmlib.createPointLocationXZ("HOME")
 		end
 		
@@ -215,6 +214,7 @@ local function SwarmDrone()
 			end
 			print("Facing registered as [" .. mobility.getFacing() .. "].")
 		end
+		print("SwarmDrone Initialization Complete!")
 	end
 
 	--[[ doIDLE ]]--
