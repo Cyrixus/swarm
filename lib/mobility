@@ -68,29 +68,6 @@ function setFacing(facing)
 end
 
 
-
-
--- [[ Init ]]--
--- (uses height instead of y to avoid confusing nomenclature, lateral movement occurs on the xz plane)
-function init(x, z, height, facing)
-    x = x or 0
-    z = z or 0
-    height = height or 0
-    facing = facing or "north"
-    
-    currentPosition = vector.new(x, height, z)
-    
-    -- Validate the facing, defaulting to north if the user types something retarded.
-    currentFacing = "north"
-    for f, v in pairs(facings) do
-        if f == facing then
-            currentFacing = f
-            break
-        end
-    end
-end
-
-
 --[[ Basic Movement Functions  ]]--
 function moveForward(count)
     local count = count

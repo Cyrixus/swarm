@@ -135,11 +135,33 @@ local function SwarmDrone()
 		
 		-- Attempt to determine absolute position
 		local x, y, z = gps.locate(5)
+		local gpsSuccess = false
+		local lastPos = swarmlib.getExactLocation("LAST_POS", self.uuid)
 		if not x then
 			print("WARNING: Could not establish location via GPS. Please manually override the "
-				.. "generated LASTPOS-XXXX file, providing the absolute coordinates of this machine.")
+				.. "generated LAST_POS-XXXX file, providing the absolute coordinates of this machine.")
+			if lastPos then
+				print("NOTICE: GPS unavailable, assuming last recorded position [" 
+					.. lastPos.x .. ", " .. lastPos.y .. ", " .. lastPos.z .. ", " .. lastPos.facing .. "].")
+				mobility.setPositionXZ(lastPos.x, lastPos.z, lastPos.y)
+				mobility.setFacing(lastPos.facing)
+			else
+				print("NOTICE: GPS unavailable and no previous position detected, assuming [0, 0, 0, north].")
+				mobility.setPositionXZ(0, 0, 0, "north")
+			end
 		else
+			gpsSuccess = true
 			mobility.setPositionXZ(x, z, y)
+			
+			if lastPos then
+				print("NOTICE: GPS available and previous position detected, setting position to [" 
+					.. x .. ", " .. y .. ", " .. z .. ", " .. lastPos.facing .."].")
+				mobility.setFacing(lastPos.facing)
+			else
+				print("NOTICE: GPS available but previous position undetected, setting position to [" 
+					.. x .. ", " .. y .. ", " .. z .. ", " .. "north" .."].")
+				mobility.setFacing("north")
+			end
 		end
 		
 		
@@ -163,7 +185,9 @@ local function SwarmDrone()
 		
 		-- Attempt to determine facing
 		local oldPos = mobility.getPosition()
-		if x and mobility.moveForward(3) then -- Check that our previous GPS attempt was good, and that we have some space
+		if gpsSuccess and mobility.moveForward(3) then -- Check that our previous GPS attempt was good, and that we have some space
+			print("NOTICE: Attempting to determine absolute facing via GPS...")
+			
 			-- Get a new reading and figure out our facing
 			x, y, z = gps.locate(5)
 			if x then
@@ -189,6 +213,7 @@ local function SwarmDrone()
 					mobility.setFacing("west")
 				end
 			end
+			print("Facing registered as [" .. mobility.getFacing() .. "].")
 		end
 	end
 
@@ -206,6 +231,9 @@ local function SwarmDrone()
 			Step 3: Determine Active Behavior via priority, queue, fuzzy logic, etc.
 			Step 4: Execute Active Behavior
 		]]--
+		
+		-- Save our current position
+   		swarmlib.createPointLocationXZ("LAST_POS", nil, nil, nil, nil, drone.getUUID())
 		
 		-- Force an IDLE tick if we're approaching the 10 second limit between os.pullEvent() calls
 		local currentTime = os.clock()

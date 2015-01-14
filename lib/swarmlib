@@ -160,6 +160,27 @@ function getClosestLocation(locID)
     return targetLoc
 end
 
+function getExactLocation(locID, uuid)
+    local locsFolder = relativeDir .. locationsDir
+    local locFile = locsFolder .. locID .. "-" .. uuid
+    
+    -- Location doesn't exist, abort.
+    if not fs.exists(locFile) or fs.isDir(locFile) then return nil end
+    
+    -- Location does exist, load and return it.
+    local f = fs.open(locFile, "r")
+    if not f then
+        error("Couldn't open file [" .. locFileName .. "]")
+    end
+    
+    -- Decode its contents into a lua table
+    local loc = JSON:decode(f.readAll())
+    f.close()
+    
+    -- Return the location
+    return loc
+end
+
 function createPointLocationXZ(locID, x, z, height, facing, uuid)
     local locsFolder = relativeDir .. locationsDir
     
@@ -169,6 +190,7 @@ function createPointLocationXZ(locID, x, z, height, facing, uuid)
     
     local loc = {}
     loc.name = locID
+    loc.type = "point"
     loc.x = x or currentPos.x
     loc.z = z or currentPos.z
     loc.y = height or currentPos.y
