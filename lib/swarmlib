@@ -162,7 +162,7 @@ function getClosestLocation(locID)
                 targetLoc = l
             else
                 local dist = distToLocation(pos, l)
-                if dist = 0 then return l end
+                if dist == 0 then return l end
                 
                 if distToLocation(pos, targetLoc) > dist then
                     targetLoc = l
