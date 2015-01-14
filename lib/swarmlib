@@ -16,6 +16,10 @@ conditionalDir = "/conditionals/"
 identityDir = "/id/" -- As in the psychological id. This dir contains the knowledge of "self".
 locationsDir = "/id/locs/"
 
+-- Location Constants
+pointType = "point"
+regionType = "region"
+
 
 --[[ Required Libs ]]--
 local apiLocation = "" .. libDir .. "JSON"
@@ -126,6 +130,16 @@ function forEachLocation(callback, locID) -- Make sure callback is a function ac
     end
 end
 
+function distToLocation(vec, loc)
+    if loc.type = pointType then
+        local distVec = vector.new(loc.x - vec.x, loc.y - vec.y, loc.z - vec.z)
+        return distVec:length()
+    elseif loc.type = regionType then
+        return mobility.distToRegion(vec, loc.v1, loc.v2)
+    end
+    return nil 
+end
+
 function getClosestLocation(locID)
     -- Build a list of potential locations
     local targetList = {}
@@ -141,16 +155,13 @@ function getClosestLocation(locID)
     end
     
     -- If there's more than one, find the closest
+    local pos = mobility.getPosition()
     if #targetList > 1 then
         for i, l in ipairs(targetList) do
             if targetLoc == nil then
                 targetLoc = l
             else
-                local v = vector.new(l.x, l.y, l.z)
-                local vNew = mobility.getPosition() - v
-                local vOld = mobility.getPosition() - targetLoc
-                
-                if vOld:length() > vNew:length() then
+                if distToLocation(pos, targetLoc) < distToLocation(pos, l) then
                     targetLoc = l
                 end
             end
@@ -181,7 +192,7 @@ function getExactLocation(locID, uuid)
     return loc
 end
 
-function createPointLocationXZ(locID, x, z, height, facing, uuid)
+function createPointLocationXZ(locID, x, z, height, facing, uuid, meta)
     local locsFolder = relativeDir .. locationsDir
     
     -- Validate all of the params, or replace the missing bits with parts of our current location
@@ -190,12 +201,13 @@ function createPointLocationXZ(locID, x, z, height, facing, uuid)
     
     local loc = {}
     loc.name = locID
-    loc.type = "point"
+    loc.type = pointType
     loc.x = x or currentPos.x
     loc.z = z or currentPos.z
     loc.y = height or currentPos.y
     loc.facing = facing or currentFacing
     loc.uuid = uuid or UUID()
+    loc.meta = meta
     
     -- Write the location to a file
     local f = fs.open(locsFolder .. loc.name .. "-" .. loc.uuid, "w")
@@ -204,6 +216,36 @@ function createPointLocationXZ(locID, x, z, height, facing, uuid)
     end
     f.write(JSON:encode(loc))
     f.close()   
+end
+
+function createPointLocation(locID, vec, facing, uuid, meta)
+    createPointLocationXZ(locID, vec.x, vec.z, vec.y, facing, uuid, meta)
+end
+
+function createRegionLocation(locID, vec1, vec2, uuid, meta)
+    local locsFolder = relativeDir .. locationsDir
+    
+    if not vec1 or not vec2 then error("SWARMLIB: Creating a region requires two valid vectors!") end
+    
+    -- Validate all of the params, or replace the missing bits with parts of our current location
+    local currentPos = mobility.getPosition()
+    local currentFacing = mobility.getFacing()
+    
+    local loc = {}
+    loc.name = locID
+    loc.type = regionType
+    loc.v1 = vec1
+    loc.v2 = vec2
+    loc.uuid = uuid or UUID()
+    loc.meta = meta
+    
+    -- Write the location to a file
+    local f = fs.open(locsFolder .. loc.name .. "-" .. loc.uuid, "w")
+    if not f then
+        error("SWARMLIB: Couldn't loc file for writing!")
+    end
+    f.write(JSON:encode(loc))
+    f.close()
 end
 
 function deleteLocation(loc)

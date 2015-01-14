@@ -1,0 +1,72 @@
+--[[ REGENERATE_MINING_CHUNKS
+    A sister script initially designed for CHUNK_MINE, although it can easily
+    be used to generate valid mining chunks for a number of different algorithms.
+    
+    Matthew DiBernardo [01.14.2015]
+]]--
+
+--[[ Constants ]]--
+local DEFAULT_FORBIDDEN_IDS = {"HOME", "FORBIDDEN"}
+local DEFAULT_MAX_RANGE = 128
+
+--[[ Execute ]]--
+function execute(forbiddenLocIDs)
+    local pos = mobility.getPosition()
+    
+    local superRegEast = pos.x + 128
+    local superRegWest = pos.x - 128
+    local superRegNorth = pos.z - 128
+    local superRegSouth = pos.z + 128
+    
+    -- Concatenate a table of all forbidden locIDs
+    local forbiddenIDs = {}
+    for i, id in ipairs(DEFAULT_FORBIDDEN_IDS) do
+        forbiddenIDs[#forbiddenIDs + 1] = id
+    end
+    
+    if forbiddenLocIDs and type(forbiddenLocIDs) == "table" then
+        for i, id in ipairs(forbiddenLocIDs) do
+            forbiddenIDs[#forbiddenIDs + 1] = id
+        end
+    elseif type(forbiddenLocIDs) == "string" then
+        forbiddenIDs[#forbiddenIDs + 1] = forbiddenLocIDs
+    end
+    
+    -- Add each chunk to a list of potential chunks
+    local chunks = {}
+    for x = superRegWest, superRegEast, 16 do
+        for z = superRegNorth, superRegSouth, 16 do
+            -- Get the bounds of the chunk
+            local chunkV1, chunkV2 = mobility.chunkContainingVec(vector.new(x, pos.y, z))
+            
+            local chunk = {v1 = chunkV1, v2 = chunkV2, forbidden = false}
+            chunks[#chunks + 1] = chunk
+        end
+    end
+    
+    -- Iterate through the list of forbidden locs
+    for i, id in ipairs(forbiddenIDs) do
+        swarmlib.forEachLocation(function(loc)
+                if loc.type = swarmlib.pointType then
+                    -- For each chunk
+                    for k, chunk in ipairs(chunks) do
+                        -- If the loc is in this chunk
+                        if isVecInRegion(vector.new(loc.x, loc.y, loc.z), chunk.v1, chunk.v2) then
+                            chunk.forbidden = true
+                            swarmlib.createRegionLocation("FORBIDDEN_MINING_CHUNK", chunk.v1, chunk.v2, nil, {forbidden = true, done = true})
+                        end
+                    end
+                end
+                -- FIXME: Handle swarmlib.regionType!
+            end, id)
+    end
+    
+    -- Iterate through all the chunks again, this time creating regions for any valid chunks
+    for i, chunk in ipairs(chunks) do
+        if not chunk.forbidden then
+            swarmlib.createRegionLocation("VALID_MINING_CHUNK", chunk.v1, chunk.v2, nil, {forbidden = false, done = false})
+        end
+    end
+    
+    print("REGENERATE_MINING_CHUNKS: Generated [" .. #chunks .. "] chunk regions.")
+end

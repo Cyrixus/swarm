@@ -4,6 +4,12 @@
     Matthew DiBernardo [01.10.2015]
 ]]--
 
+--[[ World Constants ]]--
+local TOP = 256
+local BOTTOM = 0
+local CHUNK_SIZE = 16
+
+
 --[[ Facing Vecs ]]--
 facings = {}
 facings.north = vector.new(0, 0, -1)  -- Negative Z
@@ -65,6 +71,65 @@ end
 
 function setFacing(facing)
     setIntFacing(getFacingInt(facing))
+end
+
+--[[ Region and Collision Math ]]--
+function isVecInRegion(vec, regVec1, regVec2)
+    -- Check X
+    if regVec1.x <= regVec2.x then
+        if vec.x < regVec1.x or vec.x > regVec2.x then return false end
+    else
+        if vec.x > regVec1.x or vec.x < regVec1.x then return false end
+    end
+    
+    -- Check Y
+    if regVec1.y <= regVec2.y then
+        if vec.y < regVec1.y or vec.y > regVec2.y then return false end
+    else
+        if vec.y > regVec1.y or vec.y < regVec1.y then return false end
+    end
+    
+    -- Check Z
+    if regVec1.z <= regVec2.z then
+        if vec.z < regVec1.z or vec.z > regVec2.z then return false end
+    else
+        if vec.z > regVec1.z or vec.z < regVec1.z then return false end
+    end
+    return true
+end
+
+function chunkContainingVec(vec)
+    local westEdge = vec.x - math.fmod(vec.x, CHUNK_SIZE)
+    local eastEdge = westEdge + CHUNK_SIZE - 1
+    local northEdge = vec.x - math.fmod(vec.z, CHUNK_SIZE)
+    local southEdge = southEdge + CHUNK_SIZE - 1
+    return vector.new(westEdge, TOP, northEdge), vector.new(eastEdge, BOTTOM, southEdge)
+end
+
+-- distToRegion, AKA dist to Axis-Aligned Bounding Box
+function distToRegion(vec, regVec1, regVec2)
+    -- Closest point in a region to a point inside the region is the region itself
+    local dist = 0.0
+    
+    -- Sum X Distance
+    local minX = math.min(regVec1.x, regVec2.x)
+    local maxX = math.max(regVec1.x, regVec2.x)
+    if vec.x < minX then dist = dist + ((minX - vec.x) * (minX - vec.x)) end
+    if vec.x > maxX then dist = dist + ((vec.x - maxX) * (vec.x - maxX)) end
+    
+    -- Sum Y Distance
+    local minY = math.min(regVec1.y, regVec2.y)
+    local maxY = math.max(regVec1.y, regVec2.y)
+    if vec.y < minY then dist = dist + ((minY - vec.y) * (minY - vec.y)) end
+    if vec.y > maxY then dist = dist + ((vec.y - maxY) * (vec.y - maxY)) end
+    
+    -- Sum z Distance
+    local minZ = math.min(regVec1.z, regVec2.z)
+    local maxZ = math.maz(regVec1.z, regVec2.z)
+    if vec.z < minZ then dist = dist + ((minZ - vec.z) * (minZ - vec.z)) end
+    if vec.z > maxZ then dist = dist + ((vec.z - maxZ) * (vec.z - maxZ)) end
+    
+    return dist
 end
 
 
