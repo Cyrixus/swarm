@@ -182,7 +182,7 @@ local function SwarmDrone()
 			print("Home location found at [" .. home.x .. ", " .. home.y .. ", " .. home.z .."]")
 		else
 			print("Creating home location...")
-			swarmlib.createPointLocation("HOME", nil, nil, nil, self.uuid)
+			swarmlib.createPointLocation("HOME", nil, nil, self.uuid)
 		end
 		
 		-- Attempt to determine facing
@@ -282,6 +282,7 @@ local function SwarmDrone()
 				return true
 			end
 			
+			print(activeVerb, ": ", verbParams)
 			swarmlib.executeVerb(activeVerb, verbParams)
 			
 		else
