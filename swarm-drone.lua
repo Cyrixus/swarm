@@ -187,7 +187,8 @@ local function SwarmDrone()
 		
 		-- Attempt to determine facing
 		local oldPos = mobility.getPosition()
-		if gpsSuccess and mobility.moveForward(3) then -- Check that our previous GPS attempt was good, and that we have some space
+		local couldMove = mobility.moveForward(3)
+		if gpsSuccess and couldMove then -- Check that our previous GPS attempt was good, and that we have some space
 			print("NOTICE: Attempting to determine absolute facing via GPS...")
 			
 			-- Get a new reading and figure out our facing
@@ -216,6 +217,12 @@ local function SwarmDrone()
 				end
 			end
 			print("Facing registered as [" .. mobility.getFacing() .. "].")
+		else
+			local reason = ""
+			if not gpsSuccess then reason = reason .. "No GPS available. " end
+			if not couldMove then reason = reason .. "Movement blocked. " end
+			print("WARNING: Unable to calculate facing. It is recommended to start this drone with an inital "
+				.. "facing of [" .. mobility.getFacing() .. "]; reason: " .. reason)
 		end
 		print("SwarmDrone Initialization Complete!")
 	end
