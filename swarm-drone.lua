@@ -176,9 +176,12 @@ local function SwarmDrone()
 		swarmlib.executeVerb("CHECK_SURROUNDINGS")
 		
 		-- Save the starting position with the identifier HOME, unless one already exists
-		print ("Creating home location...")
-		local home = swarmlib.getClosestLocation("HOME-"..self.uuid)
-		if not home then
+		
+		local home = swarmlib.getExactLocation("HOME", self.uuid)
+		if home then
+			print("Home location found at [" .. home.x .. ", " .. home.y .. ", " .. home.z .."]")
+		else
+			print("Creating home location...")
 			swarmlib.createPointLocation("HOME", nil, nil, nil, self.uuid)
 		end
 		
