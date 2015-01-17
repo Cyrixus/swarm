@@ -222,7 +222,16 @@ function createPointLocationXZ(locID, x, z, height, facing, uuid, meta)
 end
 
 function createPointLocation(locID, vec, facing, uuid, meta)
-    createPointLocationXZ(locID, vec.x or nil, vec.z or nil, vec.y or nil, facing, uuid, meta)
+    local x = nil
+    local y = nil
+    local z = nil
+    if vec then
+        x = vec.x or nil
+        y = vec.y or nil
+        z = vec.z or nil
+    end
+    
+    createPointLocationXZ(locID, x, z, y, facing, uuid, meta)
 end
 
 function createRegionLocation(locID, vec1, vec2, uuid, meta)
