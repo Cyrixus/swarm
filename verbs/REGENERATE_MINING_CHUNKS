@@ -50,6 +50,7 @@ function execute(forbiddenLocIDs)
     -- Iterate through the list of forbidden locs
     for i, id in ipairs(forbiddenIDs) do
         swarmlib.forEachLocation(function(loc)
+                print("Evaluating all chunks for collision with loc [" .. loc.name .. ":" .. loc.uuid .. "(" .. loc.x .. ", " .. loc.z .. ")]")
                 if loc.type == swarmlib.pointType then
                     -- For each chunk
                     for k, chunk in ipairs(chunks) do

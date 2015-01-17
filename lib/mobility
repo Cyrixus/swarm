@@ -28,23 +28,53 @@ down = vector.new(0, -1, 0)
 
 
 --[[ Current State ]]--
+-- Computer Position
 local currentPosition = vector.new(0, 0, 0) -- Assume relative origin as start, unless supplied in init
 local currentFacing = "north"
 
+-- Worldspace Offset
+local worldPosition = vector.new(0, 0, 0)
+
 
 --[[ Accessors for Position & Facing ]]--
+-- Relative Position
 function getPosition()
     return currentPosition
 end
 
-function setPositionVec(pos)
-    currentPosition = pos
-end
-
 function setPositionXZ(x, z, height)
-    setPositionVec(vector.new(x, height, z))
+    local x = x or currentPosition.x
+    local y = height or currentPosition.y
+    local z = z or currentPosition.z
+    currentPosition = vector.new(x, y, z)
 end
 
+function setPositionVec(pos)
+    setPositionXZ(pos.x, pos.z, pos.y)
+end
+
+-- Absolute Position (Experimental)
+-- FIXME: The math for absolute world position is shitty and wrong, because I'm
+-- not 100% positive how I want to handle updates from a relative coordinate
+-- system to an absolute coordinate system (which will be required for cross-
+-- drone coordination). Don't use these.
+function getAbsolutePosition()
+    return worldPosition
+end
+
+function setAbsolutePositionXZ(x, z, height)
+    local x = x or currentPosition.x
+    local y = height or currentPosition.y
+    local z = z or currentPosition.z
+    worldPosition = vector.new(x, y, z)
+    setPositionXZ(0, 0, 0)
+end
+
+function setAbsolutePosition(vec)
+    setAbsolutePositionXZ(vec.x, vec.z, vec.y)
+end
+
+-- Facing
 local function getFacingInt(facing)
     for i, f in pairs(intFacings) do
         if f == facing then
@@ -73,6 +103,7 @@ function setFacing(facing)
     setIntFacing(getFacingInt(facing))
 end
 
+
 --[[ Region and Collision Math ]]--
 function isVecInRegion(vec, regVec1, regVec2)
     -- Check X
@@ -98,6 +129,7 @@ function isVecInRegion(vec, regVec1, regVec2)
     return true
 end
 
+-- FIXME: Vec is assumed to be an absolute position
 function chunkContainingVec(vec)
     local westEdge = vec.x - math.fmod(vec.x, CHUNK_SIZE)
     local eastEdge = westEdge + CHUNK_SIZE - 1
