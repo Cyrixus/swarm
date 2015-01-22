@@ -50,7 +50,7 @@ function setPositionXZ(x, z, height)
     localPosition = vector.new(x, y, z)
 end
 
-function setPositionVec(pos)
+function setPosition(pos)
     setPositionXZ(pos.x, pos.z, pos.y)
 end
 

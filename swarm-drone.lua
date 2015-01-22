@@ -94,10 +94,13 @@ local function SwarmDrone()
 		print("Successfully loaded [" .. #self.behaviors .. "] behaviors from disk...")
 		
 		
-		-- TODO: Collect data about self
+		-- TODO: Collect data about self (check for peripherals, etc)
 		
 		
 		-- TODO: Load user-created id files(?)
+		
+		
+		-- TODO: Announce self to hivemind
 		
 		
 		--[[ Check for/create important id files ]]--
@@ -130,38 +133,27 @@ local function SwarmDrone()
 		f.close()
 		
 		
-		-- TODO: Announce self to swarm-net
+		-- Attempt to determine local position
+		local localPos = swarmlib.getExactLocation("LOCAL_POS", self.uuid)
 		
+		-- Local Position Detected
+		if localPos then
+			print("Previous local position detected: [" .. localPos.x .. ", " .. localPos.y .. ", " .. localPos.z .. "]")
+			mobility.setPositionXZ(localPos.x, localPos.z, localPos.y)
+		else
+			print("No previous local position detected; defaulting to 0, 0, 0")
+			mobility.setPositionXZ(0, 0, 0)
+		end
 		
 		-- Attempt to determine absolute position
 		local x, y, z = gps.locate(5)
 		local gpsSuccess = false
-		local lastPos = swarmlib.getExactLocation("LAST_POS", self.uuid)
-		if not x then
-			print("WARNING: Could not establish location via GPS. Please manually override the "
-				.. "generated LAST_POS-XXXX file, providing the absolute coordinates of this machine.")
-			if lastPos then
-				print("NOTICE: GPS unavailable, assuming last recorded position [" 
-					.. lastPos.x .. ", " .. lastPos.y .. ", " .. lastPos.z .. ", " .. lastPos.facing .. "].")
-				mobility.setPositionXZ(lastPos.x, lastPos.z, lastPos.y)
-				mobility.setFacing(lastPos.facing)
-			else
-				print("NOTICE: GPS unavailable and no previous position detected, assuming [0, 0, 0, north].")
-				mobility.setPositionXZ(0, 0, 0, "north")
-			end
-		else
+		
+		if x then
 			gpsSuccess = true
-			mobility.setPositionXZ(x, z, y)
-			
-			if lastPos then
-				print("NOTICE: GPS available and previous position detected, setting position to [" 
-					.. x .. ", " .. y .. ", " .. z .. ", " .. lastPos.facing .."].")
-				mobility.setFacing(lastPos.facing)
-			else
-				print("NOTICE: GPS available but previous position undetected, setting position to [" 
-					.. x .. ", " .. y .. ", " .. z .. ", " .. "north" .."].")
-				mobility.setFacing("north")
-			end
+			local worldOffset = vector.new(x, y, z) - vector.new(localPos.x, localPos.y, localPos.z)
+			mobility.setWorldOffset(worldOffset)
+		else
 		end
 		
 		
@@ -243,7 +235,12 @@ local function SwarmDrone()
 		]]--
 		
 		-- Save our current position
-   		swarmlib.createPointLocationXZ("LAST_POS", nil, nil, nil, nil, self.uuid)
+		local localPos = mobility.getPosition()
+   		swarmlib.createPointLocation("LOCAL_POS", localPos, nil, self.uuid)
+   		
+   		-- Save our current world offset
+   		local worldOffset = mobility.getWorldOffset()
+   		swarmlib.createPointLocation("WORLD_OFFSET", worldOffset, nil, self.uuid)
 		
 		-- Force an IDLE tick if we're approaching the 10 second limit between os.pullEvent() calls
 		local currentTime = os.clock()
@@ -282,7 +279,6 @@ local function SwarmDrone()
 				return true
 			end
 			
-			print(activeVerb, ": ", verbParams)
 			swarmlib.executeVerb(activeVerb, verbParams)
 			
 		else

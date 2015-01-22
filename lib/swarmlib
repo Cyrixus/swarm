@@ -80,8 +80,10 @@ function executeVerb(verb, params)
     if loadLib(verbLoc) then
         -- Execute the verb, with the provided params
         if type(params) == "table" then
+            print(activeVerb, ": [", unpack(params), "]")
             _G[verb].execute(unpack(params))
         else
+            print(activeVerb, ": ", params)
             _G[verb].execute(params)
         end
         
