@@ -29,49 +29,63 @@ down = vector.new(0, -1, 0)
 
 --[[ Current State ]]--
 -- Computer Position
-local currentPosition = vector.new(0, 0, 0) -- Assume relative origin as start, unless supplied in init
+local localPosition = vector.new(0, 0, 0) -- Assume relative origin as start, unless supplied in init
 local currentFacing = "north"
 
 -- Worldspace Offset
-local worldPosition = vector.new(0, 0, 0)
+-- The vector from World Origin (absolute 0, 0, 0) to Local Origin (relative 0, 0, 0)
+local worldOffset = vector.new(0, 0, 0)
 
 
 --[[ Accessors for Position & Facing ]]--
 -- Relative Position
 function getPosition()
-    return currentPosition
+    return localPosition
 end
 
 function setPositionXZ(x, z, height)
-    local x = x or currentPosition.x
-    local y = height or currentPosition.y
-    local z = z or currentPosition.z
-    currentPosition = vector.new(x, y, z)
+    local x = x or localPosition.x
+    local y = height or localPosition.y
+    local z = z or localPosition.z
+    localPosition = vector.new(x, y, z)
 end
 
 function setPositionVec(pos)
     setPositionXZ(pos.x, pos.z, pos.y)
 end
 
--- Absolute Position (Experimental)
--- FIXME: The math for absolute world position is shitty and wrong, because I'm
--- not 100% positive how I want to handle updates from a relative coordinate
--- system to an absolute coordinate system (which will be required for cross-
--- drone coordination). Don't use these.
-function getAbsolutePosition()
-    return worldPosition
+-- World Offset
+-- This is what you want to update when you're calibrating with GPS.
+function getWorldOffset()
+    return worldOffset
 end
 
-function setAbsolutePositionXZ(x, z, height)
-    local x = x or currentPosition.x
-    local y = height or currentPosition.y
-    local z = z or currentPosition.z
+function setWorldOffsetXZ(x, z, height)
+    local x = x or 0
+    local y = height or 0
+    local z = z or 0
     worldPosition = vector.new(x, y, z)
-    setPositionXZ(0, 0, 0)
 end
 
-function setAbsolutePosition(vec)
-    setAbsolutePositionXZ(vec.x, vec.z, vec.y)
+function setWorldOffset(vec)
+    setWorldOffsetXZ(vec.x, vec.z, vec.y)
+end
+
+-- Absolute Position
+function getAbsolutePosition()
+    return getWorldOffset() + getPosition()
+end
+
+function vecToAbsolutePosition(vec)
+    if type(vec) == "vector" then
+        return getWorldOffset() + vec
+    else
+        error("MOBILITY: vecToAbsolutePosition() could not complete because supplied param was not a vector [" .. vec .. "]")
+    end
+end
+
+function XZToAbsolutePosition(x, z, height)
+    return vecToAbsolutePosition(vector.new(x, height, z))
 end
 
 -- Facing
@@ -129,16 +143,24 @@ function isVecInRegion(vec, regVec1, regVec2)
     return true
 end
 
--- FIXME: Vec is assumed to be an absolute position
+-- Chunk Containing Local-space Vec
 function chunkContainingVec(vec)
+    local absVec = vecToAbsolutePosition(vec)
+    return chunkContainingAbsVec(absVec)
+end
+
+-- Chunk Containing World-space Vec
+function chunkContainingAbsVec(vec)
     local westEdge = vec.x - math.fmod(vec.x, CHUNK_SIZE)
     local eastEdge = westEdge + CHUNK_SIZE - 1
     local northEdge = vec.x - math.fmod(vec.z, CHUNK_SIZE)
     local southEdge = northEdge + CHUNK_SIZE - 1
     return vector.new(westEdge, TOP, northEdge), vector.new(eastEdge, BOTTOM, southEdge)
 end
+    
 
 -- distToRegion, AKA dist to Axis-Aligned Bounding Box
+-- Note: It's assumed that all three vecs are collectively in world-space OR local-space
 function distToRegion(vec, regVec1, regVec2)
     -- Closest point in a region to a point inside the region is the region itself
     local dist = 0.0
@@ -165,13 +187,13 @@ function distToRegion(vec, regVec1, regVec2)
 end
 
 
---[[ Basic Movement Functions  ]]--
+--[[ Basic Movement Functions ]]--
 function moveForward(count)
     local count = count
     while count > 0 do
         if turtle.forward() then
             count = count - 1
-            currentPosition = currentPosition + facings[currentFacing]
+            localPosition = localPosition + facings[currentFacing]
         else
             return false -- Couldn't complete the full movement
         end
@@ -184,7 +206,7 @@ function moveBack(count)
     while count > 0 do
         if turtle.back() then
             count = count - 1
-            currentPosition = currentPosition - facings[currentFacing]
+            localPosition = localPosition - facings[currentFacing]
         else
             return false -- Couldn't complete the full movement
         end
@@ -197,7 +219,7 @@ function moveUp(count)
     while count > 0 do
         if turtle.up() then
             count = count - 1
-            currentPosition = currentPosition + up
+            localPosition = localPosition + up
         else
             return false -- Couldn't complete the full movement
         end
@@ -210,7 +232,7 @@ function moveDown(count)
     while count > 0 do
         if turtle.down() then
             count = count - 1
-            currentPosition = currentPosition + down
+            localPosition = localPosition + down
         else
             return false -- Couldn't complete the full movement
         end
@@ -259,7 +281,7 @@ function turn(facing)
 end
 
 function turnToFaceVec(target)
-    local vecToTarget = target - currentPosition
+    local vecToTarget = target - localPosition
     if math.abs(vecToTarget.z) > math.abs(vecToTarget.x) then
         -- Should face along north-south
         if vecToTarget.z <= 0 then
@@ -280,12 +302,12 @@ end
 --[[ Move Towards ]]--
 function moveTowardVec(target)
     -- First, make sure we're not already there
-    if target.x == currentPosition.x and target.y == currentPosition.y and target.z == currentPosition.z then
+    if target.x == localPosition.x and target.y == localPosition.y and target.z == localPosition.z then
         return true -- We're already there!
     end
     
     -- Figure out which direction we need to head to get there
-    local dir = target - currentPosition
+    local dir = target - localPosition
     
     -- First, attempt to get on the same y-level
     if dir.y > 0 then
@@ -336,9 +358,9 @@ function moveTowardVec(target)
 end
 
 function moveTowardXZ(x, z, height)
-    x = x or currentPosition.x
-    z = z or currentPosition.z
-    height = height or currentPosition.y
+    x = x or localPosition.x
+    z = z or localPosition.z
+    height = height or localPosition.y
     return moveTowardVec(vector.new(x, z, height))
 end
 
@@ -367,12 +389,12 @@ end
 --[[ Dig Toward ]]--
 function digTowardVec(target)
     -- First, make sure we're not already there
-    if target.x == currentPosition.x and target.y == currentPosition.y and target.z == currentPosition.z then
+    if target.x == localPosition.x and target.y == localPosition.y and target.z == localPosition.z then
         return true -- We're already there!
     end
     
     -- Figure out which direction we need to head to get there
-    local dir = target - currentPosition
+    local dir = target - localPosition
     
     -- First, attempt to get on the same y-level
     if dir.y > 0 then
@@ -453,8 +475,8 @@ function digTowardVec(target)
 end
 
 function digTowardXZ(x, z, height)
-    x = x or currentPosition.x
-    z = z or currentPosition.z
-    height = height or currentPosition.y
+    x = x or localPosition.x
+    z = z or localPosition.z
+    height = height or localPosition.y
     return digTowardVec(vector.new(x, z, height))
 end
