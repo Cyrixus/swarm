@@ -186,6 +186,58 @@ function distToRegion(vec, regVec1, regVec2)
     return dist
 end
 
+-- regionCollidesWithRegion
+function regionCollidesWithRegion(reg1Vec1, reg1Vec2, reg2Vec1, reg2Vec2)
+    local west = math.min(reg1Vec1.x, reg1Vec2.x)
+    local east = math.max(reg1Vec1.x, reg1Vec2.x)
+    
+    local north = math.min(reg1Vec1.z, reg1Vec2.z)
+    local south = math.max(reg1Vec1.z, reg1Vec2.z)
+    
+    local bottom = math.min(reg1Vec1.y, reg1Vec2.y)
+    local top = math.max(reg1Vec1.y, reg1Vec2.y)
+    
+    -- Check bottom
+    if distToRegion(vector.new(west, bottom, north)) <= 0.0 then return true end
+    if distToRegion(vector.new(west, bottom, south)) <= 0.0 then return true end
+    if distToRegion(vector.new(east, bottom, north)) <= 0.0 then return true end
+    if distToRegion(vector.new(east, bottom, south)) <= 0.0 then return true end
+    
+    -- Check top
+    if distToRegion(vector.new(west, top, north)) <= 0.0 then return true end
+    if distToRegion(vector.new(west, top, south)) <= 0.0 then return true end
+    if distToRegion(vector.new(east, top, north)) <= 0.0 then return true end
+    if distToRegion(vector.new(east, top, south)) <= 0.0 then return true end
+    
+    return false
+end
+
+-- regionContainsRegion
+function regionContainsRegion(reg1Vec1, reg1Vec2, reg2Vec1, reg2Vec2)
+    local west = math.min(reg1Vec1.x, reg1Vec2.x)
+    local east = math.max(reg1Vec1.x, reg1Vec2.x)
+    
+    local north = math.min(reg1Vec1.z, reg1Vec2.z)
+    local south = math.max(reg1Vec1.z, reg1Vec2.z)
+    
+    local bottom = math.min(reg1Vec1.y, reg1Vec2.y)
+    local top = math.max(reg1Vec1.y, reg1Vec2.y)
+    
+    -- Check bottom
+    if distToRegion(vector.new(west, bottom, north)) > 0.0 then return false end
+    if distToRegion(vector.new(west, bottom, south)) > 0.0 then return false end
+    if distToRegion(vector.new(east, bottom, north)) > 0.0 then return false end
+    if distToRegion(vector.new(east, bottom, south)) > 0.0 then return false end
+    
+    -- Check top
+    if distToRegion(vector.new(west, top, north)) > 0.0 then return false end
+    if distToRegion(vector.new(west, top, south)) > 0.0 then return false end
+    if distToRegion(vector.new(east, top, north)) > 0.0 then return false end
+    if distToRegion(vector.new(east, top, south)) > 0.0 then return false end
+    
+    return true
+end
+
 
 --[[ Basic Movement Functions ]]--
 function moveForward(count)

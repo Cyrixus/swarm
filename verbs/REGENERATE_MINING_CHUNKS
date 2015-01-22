@@ -6,7 +6,7 @@
 ]]--
 
 --[[ Constants ]]--
-local DEFAULT_FORBIDDEN_IDS = {"HOME", "FORBIDDEN"}
+local DEFAULT_FORBIDDEN_IDS = {"HOME", "FORBIDDEN", "DEPOT", "DEPOSITORY"}
 local DEFAULT_MAX_RANGE = 128
 
 --[[ Execute ]]--
