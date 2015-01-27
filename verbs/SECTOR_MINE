@@ -1,0 +1,133 @@
+--[[ SECTOR_MINE
+    A refined strip-mining algorithm that cleans out MINING_SECTOR regions. The goal is to make 
+    the mining algorithm cleaner, with less potential for breakage, as well as easily serializable.
+    
+    Matthew DiBernardo [01.13.2015]
+]]--
+
+
+--[[ Constants ]]--
+local DEFAULT_AXIS = "north" -- Tries to align all mining sites along this axis.
+local MINER_UUID_NAME = "minerUUID"
+local MINER_PROGRESS_NAME = "minerProgress"
+
+--[[ Load UUID ]]--
+function loadUUID()
+    local uuidFile = "" .. swarmlib.identityDir .. "uuid"
+    if fs.exists(uuidFile) and not fs.isDir(uuidFile) then
+        local f = fs.open(uuidFile, "r")
+        if not f then
+            error("uuid file exists, but couldn't be opened!")
+        end
+        local uuid = f.readLine()
+        f.close()
+        if string.len(uuid) == 8 then
+            return uuid
+        else
+            error("STRIP_MINE: Loaded uuid was invalid, aborting!")
+        end
+    end
+end
+
+-- The drone's UUID is important for determining which sectors this drone is responsible for.
+local uuid = loadUUID()
+
+
+--[[ Get Current Mining Sector ]]--
+function getCurrentMiningSector()
+    local currentSector = nil
+    swarmlib.forEachLocation(function(loc)
+            -- If this isn't a region, abort!
+            if loc.type ~= swarmlib.regionType then
+                return
+            end
+
+            -- If the location belongs to us, it's our currentSector!
+            if loc.meta ~= nil and loc.meta[minerUUID] == uuid then
+                currentSector = loc
+            end
+        end, "ACTIVE_MINING_SECTOR")
+    return currentSector
+end
+
+
+--[[ Get Closest Inactive Sector ]]--
+function getClosestInactiveSector()
+    return swarmlib.getClosestLocation("INACTIVE_MINING_SECTOR")
+end
+
+
+--[[ Claim Sector ]]--
+function claimInactiveSector(sector)
+    -- Delete the previous INACTIVE_MINING_SECTOR info, to prevent duplicate entries.
+    if sector.name = "INACTIVE_MINING_SECTOR" then
+        swarmlib.deleteLocation(sector)
+    end
+
+    -- Make sure the meta block is initialized.
+    if sector.meta == nil then
+        sector.meta = {}
+    end
+
+    -- Set this machine as the active miner
+    sector.meta[MINER_UUID_NAME] = uuid
+
+    -- Set the progress to 0, unless progress already exists
+    if sector.meta[MINER_PROGRESS_NAME] == nil then
+        sector.meta[MINER_PROGRESS_NAME] = 0
+    end
+
+    -- Save the location to disk.
+    swarmlib.createRegionLocation("ACTIVE_MINING_SECTOR", sector.v1, sector.v2, sector.uuid, sector.meta)
+end
+
+
+--[[ Excavate ]]--
+-- A single step of digging downwards
+function excavate()
+    local success, block = turtle.inspectDown()
+    
+    -- If we've hit bedrock, we're done with this sub-sector
+    if success and block.name == "minecraft:bedrock" then
+        return false
+    end
+    
+    -- Otherwise, there's still room to dig
+    mobility.digDown()
+    if mobility.moveDown(1) then
+        local success, block = turtle.inspect()
+        if success then
+            if swarmlib.matchResourceByName(resource) then
+                mobility.dig()
+            end
+        end
+    end
+    return true
+end
+
+
+--[[ Execute ]]--
+function execute(resource)
+    -- Get the current ACTIVE_MINING_SECTOR associated with this bot
+    local currentSector = getCurrentMiningSector()
+
+    -- If we don't have one, get the closest INACTIVE_MINING_SECTOR and claim it.
+    if not currentSector then
+        currentSector = getClosestInactiveSector()
+        if currentSector then
+            claimInactiveSector(currentSector)
+        end
+    end
+
+    -- If we still don't have a sector, we're done.
+    if not currentSector then
+        return
+    end
+
+    -- Otherwise, move to our current place in the sector
+    -- [TODO]
+
+    -- And Excavate!
+    -- [TODO]
+    
+end
