@@ -5,5 +5,5 @@
     {"c":{"IS_TURTLE":true, "INVENTORY_FULL":true, "NOT_HAS_LOCATION":"DEPOT"}, "v":"GOTO", "t":"HOME"},
     {"c":{"IS_TURTLE":true, "INVENTORY_FULL":true, "AT_LOCATION":["DEPOT", 1]}, "v":"DEPOSIT", "t":"ALL"},
     {"c":{"IS_TURTLE":true, "INVENTORY_FULL":true, "HAS_LOCATION":"DEPOT"}, "v":"GOTO", "t":["DEPOT", 1]},
-    {"c":{"IS_TURTLE":true, "NOT_HAS_LOCATION":"VALID_MINING_CHUNK"}, "v":"REGENERATE_MINING_CHUNKS", "t":[]}
+    {"c":{"IS_TURTLE":true, "NOT_HAS_LOCATION":"ACTIVE_MINING_SECTOR"}, "v":"REGENERATE_MINING_SECTORS", "t":[]}
 ]

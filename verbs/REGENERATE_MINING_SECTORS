@@ -1,0 +1,186 @@
+--[[ REGENERATE_MINING_SECTORS
+    A sister script initially designed for SECTOR_MINE, although it can easily
+    be used to generate valid mining sectors for a number of different algorithms.
+
+    It defines three types of MINING_SECTOR regions:
+        1) INACTIVE_MINING_SECTOR : A mining sector which has been defined but mining has not started yet.
+            These sectors are not preserved when sectors are regenerated.
+        2) ACTIVE_MINING_SECTOR : A mining sector in which mining has begun. Their meta-data should typically
+            contain information about which turtle is mining them, the method being used, and some kind of progress
+            indicator (such that another could potentially finish it). These sectors are ignored when sectors are 
+            regenerated.
+        3) COMPLETED_MINING_SECTOR: A mining sector in which mining has finished. The meta-data should contain
+            information about which turtle completed the mining operation, and the method used. These sectors are
+            ignored when sectors are regenerated.
+
+    MINING_SECTORS will be square, axis-aligned regions of whole-integer sizes, so long as TOP_LEVEL_SECTOR_SIZE is
+    set to a power of 2. The minimum size of a sector should be 2x2. The maximum size of a sector is
+    TOP_LEVEL_SECTOR_SIZE squared. 
+    
+    Matthew DiBernardo [01.14.2015]
+]]--
+
+--[[ Constants ]]--
+local DEFAULT_FORBIDDEN_IDS = {"HOME", "FORBIDDEN", "DEPOT", "DEPOSITORY", "COMPLETED_MINING_SECTOR", "ACTIVE_MINING_SECTOR"}
+local TOP_LEVEL_SECTOR_SIZE = 128 -- How wide our top-level meta sector will be, in blocks. This should be a power of 2.
+local MIN_NODE_SIZE = 2 -- Minimum diameter of a node. Should definitely be a power of 2.
+
+-- How high we're going to set the top bound of the sector. For most algorithms, this should define the maximum
+-- z-level at which mining is performed.
+local DEFAULT_OVERWORLD_MINING_HEIGHT = 50
+
+
+--[[ Evaluate Sector ]]--
+-- Returns true if the sector is okay to use, returns false if it contains a forbidden region.
+function evaluateSector(sectorV1, sectorV2, forbiddenIDs)
+    -- Iterate through the list of forbidden locs
+    for i, id in ipairs(forbiddenIDs) do
+        swarmlib.forEachLocation(function(loc)
+            print("Evaluating sector for collision with loc [" .. loc.name .. ":" .. loc.uuid .. "(" .. loc.x .. ", " .. loc.z .. ")]")
+            
+            --[[ EVALUATE POINT TYPE ]]--
+            if loc.type == swarmlib.pointType then
+                -- If the loc is in this sector
+                if mobility.isVecInRegion(vector.new(loc.x, loc.y, loc.z), sectorV1, sectorV2) then
+                    print("NOTICE: Forbidding sector [" .. sectorV1.x .. ", " .. sectorV2.x .. " : " .. sectorV1.z .. ", " .. sectorV2.z
+                        .. "] due to forbidden location [" .. loc.name .. "-" .. loc.uuid .. "]")
+                    return false
+                end
+
+            --[[ EVALUTE REGION TYPE ]]--
+            elseif loc.type == swarmlib.regionType then
+                -- If the lock is in this sector
+                if mobility.regionCollidesWithRegion(vector.new(loc.v1.x, loc.v1.y, loc.v1.z), vector.new(loc.v2.x, loc.v2.y, loc.v2.z),
+                        sectorV1, sectorV2) then
+                    print("NOTICE: Forbidding sector [" .. sectorV1.x .. ", " .. sectorV2.x .. " : " .. sectorV1.z .. ", " .. sectorV2.z
+                        .. "] due to forbidden location [" .. loc.name .. "-" .. loc.uuid .. "]")
+                    return false
+                end
+            end
+
+        end, id) -- END foreach function()
+    end -- END for i, id in pairs
+end
+
+--[[ Subdivide QuadTree Node ]]--
+-- Returns a table of 4 new nodes or nil
+function subdivide(node)
+    local nodeWidth = math.abs(node.v1.x - node.v2.x) + 1
+    local nodeHeight = math.abs(node.v1.z - node.v2.z) + 1
+
+    -- Check for errors
+    if nodeWidth ~= nodeHeight then
+        -- FIXME: Bad juju, somehow we ended up with uneven sides. Sectors should be SQUARE!
+        return nil
+    end
+
+    if nodeWidth % 2 ~= 0 then
+        -- FIXME: Bad juju, somehow we ended up with sides that are not multiples of 2!
+        return nil
+    end
+
+    if nodeWidth < MIN_NODE_SIZE then
+        -- FIXME: Bad juju, nodes are too small!
+        return nil
+    end
+
+    -- Check to see if we're already at our smallest size.
+    if nodeWidth == MIN_NODE_SIZE then
+        return nil
+    end
+
+    -- Otherwise, we're going to attempt a subdivision
+    local minX = math.min(node.v1.x, node.v2.x)
+    local maxX = math.max(node.v1.x, node.v2.x)
+    local minY = math.min(node.v1.y, node.v2.y)
+    local maxY = math.max(node.v1.y, node.v2.y)
+    local minZ = math.min(node.v1.z, node.v2.z)
+    local maxZ = math.max(node.v1.z, node.v2.z)
+
+    local nodes = {}
+    nodes[0] = {
+            v1 = vector.new(minX, minY, minZ),
+            v2 = vector.new(minX + (nodeWidth/2) - 1, maxY, minZ + (nodeWidth/2) - 1)
+        }
+    nodes[1] = {
+            v1 = vector.new(minX, minY, minZ + (nodeWidth/2)),
+            v2 = vector.new(minX + (nodeWidth/2) - 1, maxY, maxZ)
+        }
+    nodes[2] = {
+            v1 = vector.new(minX + (nodeWidth/2), minY, minZ),
+            v2 = vector.new(maxX, maxY, minZ + (nodeWidth/2) - 1)
+        }
+    nodes[3] = {
+            v1 = vector.new(minX + (nodeWidth/2), minY, minZ + (nodeWidth/2)),
+            v2 = vector.new(maxX, maxY, maxZ)
+        }
+
+    return nodes
+end
+
+
+--[[ Execute ]]--
+function execute(forbiddenLocIDs)
+    local pos = mobility.getPosition()
+
+    -- When defining regions, we have to remember that what we're really working with is a large, multi-dimensional array.
+    -- This array is zero-indexed, and 0, 0 is a block, not a point on an axis between boxes. Thus, pos.x, pos.z is the first
+    -- box in the south-eastern quadrant, and (pos.x + (size/2) - 1), (pos.z + (size/2) - 1) is the last. 
+    local superRegEast = pos.x + (TOP_LEVEL_SECTOR_SIZE / 2) - 1
+    local superRegWest = pos.x - (TOP_LEVEL_SECTOR_SIZE / 2) 
+    local superRegNorth = pos.z - (TOP_LEVEL_SECTOR_SIZE / 2)
+    local superRegSouth = pos.z + (TOP_LEVEL_SECTOR_SIZE / 2) - 1 
+    
+    -- Remove all previous inactive mining sectors
+    swarmlib.forEachLocation(function(loc) swarmlib.deleteLocation(loc) end, "INACTIVE_MINING_SECTOR")
+    
+    -- Concatenate a table of all forbidden locIDs
+    local forbiddenIDs = {}
+    for i, id in ipairs(DEFAULT_FORBIDDEN_IDS) do
+        forbiddenIDs[#forbiddenIDs + 1] = id
+    end
+    
+    if forbiddenLocIDs and type(forbiddenLocIDs) == "table" then
+        for i, id in ipairs(forbiddenLocIDs) do
+            forbiddenIDs[#forbiddenIDs + 1] = id
+        end
+    elseif type(forbiddenLocIDs) == "string" then
+        forbiddenIDs[#forbiddenIDs + 1] = forbiddenLocIDs
+    end
+    
+    --[[ Our goal here is to build a quad-tree of potential regions that can be mined, to a certain level of saturation. ]]--
+    -- Create the root node of the quadtree
+    local rootNode = {
+            v1 = vector.new(superRegWest, 0, superRegNorth), 
+            v2 = vector.new(superRegEast, TOP_LEVEL_SECTOR_SIZE, superRegSouth)
+        }
+
+    -- Create the queue of nodes we still need to evaluate and add the root node to it.
+    local nodes = {}
+    nodes[#nodes + 1] = rootNode
+
+
+    --[[ There might be more refined algorithms for determining if a sector intersects a forbidden region, but AABB collision
+        tests are realtively fast and premature optimization is the root of all evil. ITERATE ALL THE THINGS. ]]--
+    local numGeneratedRegions = 0
+    -- For Each Node
+    for i = 1, #nodes, 1 do
+        -- Evalute the node for potential forbidden-zone collision
+        if evaluateSector(nodes[i].v1, nodes[i].v2, forbiddenIDs) then
+            -- If the node contains no collisions, create a region for it and continue evaluating nodes.
+            createRegionLocation("INACTIVE_MINING_SECTOR", nodes[i].v1, nodes[i].v2)
+            numGeneratedRegions = numGeneratedRegions + 1
+        else
+            -- Otherwise, there are collissions: subdivide if possible, add children to the queue, and continue evaluating.
+            nodes[i].children = subdivide(nodes[i])
+
+            if nodes[i].children ~= nil then
+                for i, child in ipairs(nodes[i].children) do
+                    nodes[#nodes + 1] = child
+                end
+            end
+        end
+    end
+    
+    print("REGENERATE_MINING_SECTORS: Generated [" .. numGeneratedRegions .. "] INACTIVE_MINING_SECTOR regions.")
+end
